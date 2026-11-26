@@ -18,6 +18,7 @@
   </div>
 
   <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="photo" id="photo" aria-hidden="true"></div>
   <div class="veil" aria-hidden="true"></div>
 
   <header class="top">
@@ -85,7 +86,7 @@
       </article>
     </section>
 
-    <section class="ch ch--tall" id="renders" data-chapter="documentacion" data-label="Renders">
+    <section class="ch ch--tall" id="renders" data-chapter="renders" data-label="Renders">
       <article class="copy copy--wide">
         <h2>Renders</h2>
         <p>Vistas aéreas del conjunto, las tipologías de departamentos, el parque elevado y el lobby. Tocá una imagen para verla grande.</p>
@@ -155,7 +156,7 @@
       </article>
     </section>
 
-    <section class="ch ch--tall" id="quinta" data-chapter="arte" data-label="Quinta fachada">
+    <section class="ch ch--tall" id="quinta" data-chapter="quinta" data-label="Quinta fachada">
       <article class="copy copy--wide qf">
         <h2>Quinta fachada</h2>
         <p class="qf__lead">La quinta fachada es la cara del edificio que se mira desde abajo: el intradós del voladizo del piso 11, sobre la terraza común del piso 10. Ahí aparece la idea de <em>Vestigium</em> en su forma más literal: una pintura que asoma entre las grietas de un revoque gastado, como un fresco que el tiempo tapó y que vuelve a verse a pedazos.</p>
@@ -217,6 +218,37 @@
     </section>
   </main>
 
+  <script>
+    // Fondo realista por seccion. Para usar los renders de D5, reemplazá estas rutas
+    // (por ejemplo 'assets/renders/d5/lobby.jpg'). null = se ve el modelo 3D.
+    const FONDOS = {
+      hero: 'assets/renders/real/parque.jpg',
+      conjunto: 'assets/renders/real/parque.jpg',
+      amenities: 'assets/renders/real/cowork.jpg',
+      residencial: 'assets/renders/real/living.jpg',
+      planta: null,
+      renders: 'assets/renders/real/terraza.jpg',
+      recorrido: null,
+      documentacion: null,
+      quinta: 'assets/arte/quinta-fachada.jpg',
+      arte: 'assets/renders/real/comedor.jpg',
+      contacto: 'assets/renders/real/terraza.jpg',
+    };
+    (() => {
+      const box = document.getElementById('photo');
+      const imgs = {};
+      for (const src of new Set(Object.values(FONDOS).filter(Boolean))) {
+        const im = new Image(); im.src = src; im.alt = ''; im.decoding = 'async'; box.appendChild(im); imgs[src] = im;
+      }
+      const show = () => {
+        const src = FONDOS[document.body.dataset.chapter];
+        Object.values(imgs).forEach((im) => im.classList.toggle('is-on', im === imgs[src]));
+        document.body.classList.toggle('has-photo', !!src);
+      };
+      new MutationObserver(show).observe(document.body, { attributes: true, attributeFilter: ['data-chapter'] });
+      show();
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
