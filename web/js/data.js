@@ -74,6 +74,7 @@ export const DOCS = {
     { title: 'Cochera subsuelo 2', code: 'PL-SS2', src: L(4) },
     { title: 'Planta baja · lobby y café', code: 'PL-00', src: L(5) },
     { title: 'Planta parque y terraza piso 10', code: 'PL-01', src: L(6) },
+    { title: 'Amenities · coworking, gimnasio y SUM', code: 'PL-AM', src: L(19) },
     { title: 'Planta tipo · 1° y 2° modelo', code: 'PL-02', src: L(7) },
     { title: 'Penthouse · Astrólogo', code: 'PL-PH1', src: L(8) },
     { title: 'Penthouse · Músico', code: 'PL-PH2', src: L(9) },
@@ -81,7 +82,7 @@ export const DOCS = {
   cortes: [
     { title: 'Cortes', code: 'CT', src: L(10) },
     { title: 'Detalle 1 · voladizo, vigas y entrepiso', code: 'DT-01', src: L(17) },
-    { title: 'Detalle 1 · continuación', code: 'DT-01b', src: L(18) },
+    { title: 'Corte constructivo · pisos tipo 5 y 6 (esc. 1:20)', code: 'CT-01', src: L(18) },
   ],
   vistas: [
     { title: 'Fachada sur', code: 'VS-S', src: L(12) },
@@ -97,8 +98,12 @@ export const DOCS = {
 
 // Obras de autor (esculturas y pinturas). Imagen en assets/arte/.
 export const ARTE = [
-  { type: 'Escultura', title: 'Obra a confirmar', author: 'Autor —', tech: 'Técnica —', place: 'Plaza de acceso', img: null },
-  { type: 'Escultura', title: 'Obra a confirmar', author: 'Autor —', tech: 'Técnica —', place: 'Lobby', img: null },
-  { type: 'Pintura', title: 'Obra a confirmar', author: 'Autor —', tech: 'Técnica —', place: 'Lobby', img: null },
-  { type: 'Pintura', title: 'Obra a confirmar', author: 'Autor —', tech: 'Técnica —', place: 'Amenities', img: null },
+  { type: 'Pintura', title: 'Sin título (azules)', author: 'Mark Rothko', tech: 'óleo sobre tela', place: 'Lobby', img: 'assets/arte/rothko.jpg' },
+  { type: 'Pintura', title: 'Pintura por goteo (drip painting)', author: 'Jackson Pollock', tech: 'esmalte y óleo sobre tela', place: 'Lobby, frente a los ascensores', img: 'assets/arte/pollock.jpg' },
+  { type: 'Pintura', title: 'Paisaje surrealista (título a confirmar)', author: 'Roberto Matta', tech: 'óleo sobre tela', place: 'Departamentos', img: 'assets/arte/matta.jpg' },
+  { type: 'Pintura', title: 'La persistencia de la memoria (1931)', author: 'Salvador Dalí', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/dali.jpg' },
+  { type: 'Pintura', title: 'Almendro en flor (1890)', author: 'Vincent van Gogh', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/van-gogh.jpg' },
+  { type: 'Pintura', title: 'Nenúfares', author: 'Claude Monet', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/monet.jpg' },
+  { type: 'Pintura', title: 'La última cena (1495–1498)', author: 'Leonardo da Vinci', tech: 'temple y óleo sobre yeso', place: 'Departamentos', img: 'assets/arte/leonardo.jpg' },
+  { type: 'Escultura', title: 'Figura en bronce (título a confirmar)', author: 'Autor a confirmar', tech: 'bronce patinado con apliques dorados', place: 'Penthouse', img: 'assets/arte/escultura.jpg' },
 ];
