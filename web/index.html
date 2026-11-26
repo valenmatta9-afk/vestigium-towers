@@ -219,34 +219,54 @@
   </main>
 
   <script>
-    // Fondo realista por seccion. Para usar los renders de D5, reemplazá estas rutas
-    // (por ejemplo 'assets/renders/d5/lobby.jpg'). null = se ve el modelo 3D.
-    const FONDOS = {
-      hero: 'assets/renders/real/parque.jpg',
-      conjunto: 'assets/renders/real/parque.jpg',
-      amenities: 'assets/renders/real/cowork.jpg',
-      residencial: 'assets/renders/real/living.jpg',
-      planta: null,
-      renders: 'assets/renders/real/terraza.jpg',
-      recorrido: null,
-      documentacion: null,
-      quinta: 'assets/arte/quinta-fachada.jpg',
-      arte: 'assets/renders/real/comedor.jpg',
-      contacto: 'assets/renders/real/terraza.jpg',
+    // Fondos realistas con zoom: en cada seccion, al bajar, la camara se acerca a un punto
+    // de la imagen (fx, fy en 0..1) y entra al espacio siguiente. Para usar renders de D5,
+    // reemplaza las rutas (por ejemplo 'assets/renders/d5/lobby.jpg'). Sin lista = modelo 3D.
+    const R = 'assets/renders/real/';
+    const SECUENCIAS = {
+      hero:        [{ src: R + 'parque.jpg', fx: .5, fy: .5 }],
+      conjunto:    [{ src: R + 'parque.jpg', fx: .62, fy: .45 }, { src: R + 'terraza.jpg', fx: .5, fy: .5 }],
+      amenities:   [{ src: R + 'parque.jpg', fx: .45, fy: .78 }, { src: R + 'cowork.jpg', fx: .55, fy: .45 }, { src: R + 'gimnasio.jpg', fx: .5, fy: .5 }],
+      residencial: [{ src: R + 'terraza.jpg', fx: .62, fy: .3 }, { src: R + 'living.jpg', fx: .45, fy: .55 }, { src: R + 'comedor.jpg', fx: .5, fy: .5 }],
+      renders:     [{ src: R + 'terraza.jpg', fx: .5, fy: .5 }],
+      quinta:      [{ src: 'assets/arte/quinta-fachada.jpg', fx: .5, fy: .5 }, { src: 'assets/arte/inspiracion-quinta-fachada.jpg', fx: .7, fy: .4 }],
+      arte:        [{ src: R + 'comedor.jpg', fx: .5, fy: .5 }],
+      contacto:    [{ src: R + 'terraza.jpg', fx: .5, fy: .5 }],
     };
     (() => {
       const box = document.getElementById('photo');
-      const imgs = {};
-      for (const src of new Set(Object.values(FONDOS).filter(Boolean))) {
-        const im = new Image(); im.src = src; im.alt = ''; im.decoding = 'async'; box.appendChild(im); imgs[src] = im;
-      }
-      const show = () => {
-        const src = FONDOS[document.body.dataset.chapter];
-        Object.values(imgs).forEach((im) => im.classList.toggle('is-on', im === imgs[src]));
-        document.body.classList.toggle('has-photo', !!src);
+      const els = {};
+      Object.entries(SECUENCIAS).forEach(([ch, list]) => {
+        els[ch] = list.map((f) => { const im = new Image(); im.src = f.src; im.alt = ''; im.decoding = 'async'; box.appendChild(im); return im; });
+      });
+      const ease = (t) => t * t * (3 - 2 * t);
+      let raf = 0;
+      const paint = () => {
+        raf = 0;
+        const ch = document.body.dataset.chapter;
+        const list = SECUENCIAS[ch];
+        document.body.classList.toggle('has-photo', !!list);
+        Object.entries(els).forEach(([k, arr]) => { if (k !== ch) arr.forEach((im) => { im.style.opacity = 0; }); });
+        if (!list) return;
+        const sec = document.querySelector(`main section[data-chapter="${ch}"]`);
+        if (!sec) return;
+        const r = sec.getBoundingClientRect();
+        const p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - innerHeight)));
+        const n = list.length, seg = p * n, i = Math.min(n - 1, Math.floor(seg)), t = seg - i;
+        els[ch].forEach((im, k) => {
+          const f = list[k];
+          im.style.transformOrigin = `${f.fx * 100}% ${f.fy * 100}%`;
+          let op = 0, sc = 1;
+          if (k === i) { sc = 1 + (k < n - 1 ? 1.6 * ease(t) : 0.08 * (1 - t)); op = k < n - 1 ? 1 - Math.max(0, (t - .72) / .28) : 1; }
+          else if (k === i + 1) { op = Math.max(0, (t - .72) / .28); sc = 1.12 - .12 * op; }
+          im.style.opacity = op; im.style.transform = `scale(${sc})`;
+        });
       };
-      new MutationObserver(show).observe(document.body, { attributes: true, attributeFilter: ['data-chapter'] });
-      show();
+      const req = () => { if (!raf) raf = requestAnimationFrame(paint); };
+      addEventListener('scroll', req, { passive: true });
+      addEventListener('resize', req);
+      new MutationObserver(req).observe(document.body, { attributes: true, attributeFilter: ['data-chapter'] });
+      paint();
     })();
   </script>
   <script type="module" src="js/main.js"></script>
