@@ -34,6 +34,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ── Capas fijas ── */
 #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; transition: opacity 0.8s ease; }
 body[data-chapter='recorrido'] #gl { opacity: 0.12; }
+/* Fondo fotorrealista: un render de D5 por seccion. El modelo 3D solo se ve en planta y planos. */
+.photo { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: var(--encofrado); }
+.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06);
+  transition: opacity 1.1s ease, transform 9s ease-out; }
+.photo img.is-on { opacity: 1; transform: scale(1); }
+body.has-photo #gl { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .photo img { transition: opacity .3s; transform: none; } }
 .veil {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(90deg, rgba(42, 39, 35, 0.78) 0%, rgba(42, 39, 35, 0.42) 34%, rgba(42, 39, 35, 0) 58%);
