@@ -28,6 +28,7 @@
       <a href="#residencial">Residencial</a>
       <a href="#recorrido">Recorrido</a>
       <a href="#documentacion">Planos</a>
+      <a href="#quinta">Quinta fachada</a>
       <a href="#arte">Arte</a>
       <a href="estilo-b.html">Diseño B</a>
     </nav>
@@ -153,6 +154,49 @@
         </label>
       </article>
     </section>
+
+    <section class="ch ch--tall" id="quinta" data-chapter="arte" data-label="Quinta fachada">
+      <article class="copy copy--wide qf">
+        <h2>Quinta fachada</h2>
+        <p class="qf__lead">La quinta fachada es la cara del edificio que se mira desde abajo: el intradós del voladizo del piso 11, sobre la terraza común del piso 10. Ahí aparece la idea de <em>Vestigium</em> en su forma más literal: una pintura que asoma entre las grietas de un revoque gastado, como un fresco que el tiempo tapó y que vuelve a verse a pedazos.</p>
+
+        <div class="qf__pair">
+          <figure>
+            <img src="assets/arte/inspiracion-quinta-fachada.jpg" alt="Fresco de una figura femenina que aparece entre las grietas de una pared de revoque" loading="lazy" width="630" height="615">
+            <figcaption><strong>La inspiración.</strong> Un rostro pintado que aparece al romperse una pared vieja: debajo de la ruina había una imagen. Imagen de referencia: @fenwoo.</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/arte/quinta-fachada.jpg" alt="Textura de revoque tipo ruina con color que aparece entre las grietas" loading="lazy">
+            <figcaption><strong>En el proyecto.</strong> El revoque tipo ruina del intradós deja ver la pintura en los huecos, entre las vigas del voladizo.</figcaption>
+          </figure>
+        </div>
+
+        <h3 class="qf__h">Cómo salen las ruinas</h3>
+        <ol class="qf__steps">
+          <li><strong>Primero, la pintura.</strong> Sobre la losa del voladizo, entre las vigas de 1,44 × 0,80 m, se pinta el mural completo con pintura mineral, que resiste la intemperie.</li>
+          <li><strong>Después, la ruina.</strong> Encima se aplica un revoque grueso tipo ruina de 2,5 cm que tapa toda la imagen, como si fuera una pared más.</li>
+          <li><strong>Por último, el descubrimiento.</strong> Antes de que el revoque endurezca del todo se lo quiebra y se retira por zonas, siguiendo grietas irregulares, hasta que la pintura vuelve a aparecer a pedazos. Al final se sella todo con un fijador transparente para que no se desprenda.</li>
+        </ol>
+
+        <p>El hormigón visto del edificio guarda la huella de cómo se construyó: la marca de cada tabla del encofrado. La quinta fachada cuenta otra huella, la de lo que había antes. Quien levanta la vista desde la terraza o desde la vereda no ve un cielorraso: encuentra un vestigio.</p>
+
+        <figure class="qf__plan">
+          <a href="assets/planos/paginas/lamina-16.jpg" target="_blank" rel="noopener"><img src="assets/planos/paginas/lamina-16.jpg" alt="Lámina de la quinta fachada" loading="lazy" width="2583" height="1825"></a>
+          <figcaption>Lámina de la quinta fachada (VS-05). Tocala para verla completa.</figcaption>
+        </figure>
+      </article>
+    </section>
+    <style>
+      .qf__lead { font-size: 1.1em; }
+      .qf__pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin: 1.5rem 0; }
+      .qf figure { margin: 0; }
+      .qf figure img { display: block; width: 100%; height: auto; aspect-ratio: 630 / 615; object-fit: cover; }
+      .qf figcaption { font-size: .9em; line-height: 1.45; margin-top: .5rem; opacity: .85; }
+      .qf__h { font-family: 'Big Shoulders Display', sans-serif; font-size: 1.6rem; margin: 1.6rem 0 .6rem; }
+      .qf__steps { padding-left: 1.3rem; display: grid; gap: .7rem; margin: 0 0 1.2rem; }
+      .qf__plan { margin-top: 1.5rem !important; }
+      .qf__plan img { aspect-ratio: 2583 / 1825 !important; background: #e4e1dc; }
+    </style>
 
     <section class="ch ch--tall" id="arte" data-chapter="arte" data-label="Arte">
       <article class="copy copy--wide">
