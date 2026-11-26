@@ -68,6 +68,15 @@ export const RECORRIDO = [
 // exportada como imagen en assets/planos/paginas/ (se ve bien en cualquier celular).
 const L = (n) => `assets/planos/paginas/lamina-${String(n).padStart(2, '0')}.jpg`;
 export const PDF = 'assets/planos/documentacion-tecnica.pdf';
+// Quinta fachada: el intradós del voladizo del piso 11 (ver Detalle 1).
+export const QUINTA =
+  'La quinta fachada es la cara del edificio que se mira desde abajo: el intradós del voladizo del piso 11, ' +
+  'entre las vigas de 1,44 × 0,80 m, sobre la terraza común del piso 10. ' +
+  'Está terminada con un revoque grueso tipo ruina, de 2,5 cm, agrietado y con faltantes, y en los huecos aparece ' +
+  'una pintura mural, como un fresco que se descubre debajo de una pared vieja. ' +
+  'Es la idea de Vestigium llevada al techo. El hormigón visto deja la huella de cómo se construyó el edificio; ' +
+  'la quinta fachada sugiere lo que había antes, una imagen que el tiempo tapó a medias y que se deja ver ' +
+  'solo por las grietas. Quien levanta la vista desde la terraza o desde la vereda encuentra un vestigio.';
 export const DOCS = {
   plantas: [
     { title: 'Cochera subsuelo 1', code: 'PL-SS1', src: L(3) },
@@ -89,7 +98,7 @@ export const DOCS = {
     { title: 'Fachada norte', code: 'VS-N', src: L(13) },
     { title: 'Fachada este', code: 'VS-E', src: L(14) },
     { title: 'Fachada oeste', code: 'VS-O', src: L(15) },
-    { title: 'Quinta fachada', code: 'VS-05', src: L(16) },
+    { title: 'Quinta fachada', code: 'VS-05', src: L(16), note: QUINTA },
   ],
   implantacion: [
     { title: 'Planta entorno inmediato', code: 'IM-01', src: L(2) },
@@ -105,5 +114,6 @@ export const ARTE = [
   { type: 'Pintura', title: 'Almendro en flor (1890)', author: 'Vincent van Gogh', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/van-gogh.jpg' },
   { type: 'Pintura', title: 'Nenúfares', author: 'Claude Monet', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/monet.jpg' },
   { type: 'Pintura', title: 'La última cena (1495–1498)', author: 'Leonardo da Vinci', tech: 'temple y óleo sobre yeso', place: 'Departamentos', img: 'assets/arte/leonardo.jpg' },
+  { type: 'Pintura mural', title: 'Quinta fachada · la pintura bajo la ruina', author: 'Diseño del proyecto', tech: 'pintura bajo revoque grueso tipo ruina', place: 'Intradós del voladizo, sobre la terraza del piso 10', img: 'assets/arte/quinta-fachada.jpg' },
   { type: 'Escultura', title: 'Figura en bronce (título a confirmar)', author: 'Autor a confirmar', tech: 'bronce patinado con apliques dorados', place: 'Penthouse', img: 'assets/arte/escultura.jpg' },
 ];
