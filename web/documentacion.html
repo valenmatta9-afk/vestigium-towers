@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vestigium Towers · Documentación técnica</title>
+<meta name="description" content="Documentación técnica de Vestigium Towers: plantas, cortes, fachadas, implantación y detalles.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root { --paper:#ffffff; --ink:#2a2724; --muted:#6d6862; --line:#d6d2cb; --sheet:#e4e1dc; --accent:#6b2433;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif; --ui:'Helvetica Neue',Helvetica,Arial,sans-serif; color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--ui);
+  padding: 0 max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left)); }
+.wrap { max-width: 1180px; margin: 0 auto; }
+header { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; gap:16px; padding: max(14px, env(safe-area-inset-top)) 0 14px; }
+.brand { font-family:var(--display); font-weight:900; font-size:22px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink); text-decoration:none; }
+header nav { display:flex; gap:18px; font-size:14px; flex-wrap:wrap; justify-content:flex-end; }
+header nav a { color:var(--ink); }
+h1 { font-family:var(--display); font-weight:900; text-transform:uppercase; font-size:clamp(44px, 8vw, 88px); line-height:.9; margin:36px 0 10px; }
+.lead { color:var(--muted); max-width:60ch; line-height:1.5; margin:0 0 8px; }
+.pdf { display:inline-flex; align-items:center; gap:10px; margin-top:14px; padding:12px 18px; border:1.5px solid var(--ink); color:var(--ink); text-decoration:none; font-size:15px; }
+.pdf:hover, .pdf:focus-visible { background:var(--ink); color:var(--paper); }
+.jump { display:flex; flex-wrap:wrap; gap:8px; margin:28px 0 8px; }
+.jump a { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); text-decoration:none; border:1px solid var(--line); padding:8px 12px; }
+.jump a:hover { border-color:var(--ink); }
+h2 { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:34px; margin:44px 0 14px; padding-top:12px; border-top:2px solid var(--ink); scroll-margin-top: 80px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap:18px; }
+figure { margin:0; }
+figure a { display:block; background:var(--sheet); }
+figure img { display:block; width:100%; height:auto; aspect-ratio: 2583 / 1825; }
+figcaption { display:flex; justify-content:space-between; gap:12px; font-size:14px; padding:8px 0; border-bottom:1px solid var(--line); }
+figcaption span { color:var(--muted); font-variant-numeric: tabular-nums; }
+a:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.hint { font-size:13px; color:var(--muted); margin-top:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="../index.html">Vestigium</a>
+    <nav aria-label="Secciones"><a href="index.html">Página web 3D</a><a href="estilo-b.html">Galería</a></nav>
+  </header>
+  <h1>Documentación técnica</h1>
+  <p class="lead">Plantas, cortes, fachadas, implantación y detalles constructivos. Tocá una lámina para verla en tamaño completo y acercarte con los dedos.</p>
+  <a class="pdf" href="assets/planos/documentacion-tecnica.pdf">Abrir el PDF completo (18 láminas, 10 MB)</a>
+  <nav class="jump" id="jump" aria-label="Ir a"></nav>
+  <main id="docs"></main>
+</div>
+<script type="module">
+import { DOCS } from './js/data.js';
+const names = { plantas: 'Plantas', cortes: 'Cortes y detalles', vistas: 'Fachadas', implantacion: 'Implantación' };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+document.getElementById('jump').innerHTML = Object.keys(DOCS).map((k) => `<a href="#${k}">${names[k] || k}</a>`).join('');
+document.getElementById('docs').innerHTML = Object.entries(DOCS).map(([k, list]) => `
+  <section><h2 id="${k}">${names[k] || k}</h2><div class="grid">${list.map((d) => `
+    <figure><a href="${esc(d.src)}" target="_blank" rel="noopener"><img src="${esc(d.src)}" alt="${esc(d.title)}" loading="lazy" width="2583" height="1825"></a>
+    <figcaption>${esc(d.title)}<span>${esc(d.code)}</span></figcaption></figure>`).join('')}</div></section>`).join('');
+</script>
+</body>
+</html>

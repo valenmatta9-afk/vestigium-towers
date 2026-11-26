@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vestigium Towers</title>
+  <meta name="description" content="Vestigium Towers: una torre de hormigón visto sobre un basamento de amenities en el centro de Mendoza. Proyecto de arquitectura." />
+  <meta name="theme-color" content="#3A3631" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-chapter="hero">
+  <div class="loader" id="loader" aria-hidden="true">
+    <p class="loader__word">Vestigium</p>
+    <p class="loader__count"><span id="loadCount">0</span>%</p>
+  </div>
+
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="veil" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="#hero">Vestigium</a>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#conjunto">Conjunto</a>
+      <a href="#amenities">Amenities</a>
+      <a href="#residencial">Residencial</a>
+      <a href="#recorrido">Recorrido</a>
+      <a href="#documentacion">Planos</a>
+      <a href="#arte">Arte</a>
+      <a href="estilo-b.html">Diseño B</a>
+    </nav>
+  </header>
+
+  <aside class="rail" aria-hidden="true">
+    <span class="rail__bar"><i id="railFill"></i></span>
+    <span class="rail__label" id="railLabel">Inicio</span>
+  </aside>
+
+  <div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+  <main>
+    <section class="ch ch--hero" id="hero" data-chapter="hero" data-label="Inicio">
+      <div class="hero">
+        <h1 class="cast" aria-label="Vestigium Towers">Vestigium</h1>
+        <p class="hero__sub">Una torre de hormigón visto sobre un estacionamiento del centro de Mendoza.</p>
+      </div>
+      <p class="hero__scroll">Bajá para recorrer el proyecto</p>
+    </section>
+
+    <section class="ch" id="conjunto" data-chapter="conjunto" data-label="Conjunto">
+      <article class="copy">
+        <h2>Vestigium: la huella</h2>
+        <p id="introText"></p>
+        <div class="pick">
+          <button class="pick__btn" data-goto="amenities"><span>Basamento</span>Amenities</button>
+          <button class="pick__btn" data-goto="residencial"><span>Torre</span>Residencial</button>
+        </div>
+        <p class="hint">También podés elegir cada parte tocándola en la maqueta.</p>
+      </article>
+    </section>
+
+    <section class="ch ch--tall" id="amenities" data-chapter="amenities" data-label="Amenities">
+      <article class="copy">
+        <h2 id="taTitle"></h2>
+        <p id="taText"></p>
+        <ul class="list" id="amenityList"></ul>
+      </article>
+    </section>
+
+    <section class="ch" id="residencial" data-chapter="residencial" data-label="Residencial">
+      <article class="copy">
+        <h2 id="tbTitle"></h2>
+        <p id="tbText"></p>
+        <dl class="units" id="unitList"></dl>
+      </article>
+    </section>
+
+    <section class="ch" id="planta" data-chapter="planta" data-label="Planta tipo">
+      <article class="copy">
+        <h2>Planta tipo</h2>
+        <p>Acá la torre se abre y deja ver un departamento amueblado en corte isométrico. Se arma con el modelo final de SketchUp.</p>
+      </article>
+    </section>
+
+    <section class="ch ch--tall" id="renders" data-chapter="documentacion" data-label="Renders">
+      <article class="copy copy--wide">
+        <h2>Renders</h2>
+        <p>Vistas aéreas del conjunto, las tipologías de departamentos, el parque elevado y el lobby. Tocá una imagen para verla grande.</p>
+        <div class="gal" id="gal"></div>
+      </article>
+    </section>
+    <style>
+      .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:1.5rem}
+      .gal figure{margin:0;background:#3A3631;cursor:zoom-in}
+      .gal img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+      .gal figcaption{font-size:.85rem;padding:.4rem .6rem;color:#DCD9D2}
+      .gal-full{position:fixed;inset:0;z-index:99;background:rgba(20,18,16,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+      .gal-full img{max-width:94vw;max-height:90vh}
+    </style>
+    <script>
+      (() => {
+        const R = [['R01','Aérea del conjunto, suroeste'],['R02','Aérea del conjunto, noreste'],['R03','Aérea desde el frente'],['R04','Vereda y acceso'],
+          ['R05','Tipología · planta tipo 1'],['R06','Tipología · planta tipo 2'],['R07','Tipología · dúplex'],['R08','Departamento piso 1'],['R09','Departamento piso 1, B'],
+          ['R10','Parque elevado, aérea'],['R11','Parque elevado'],['R12','Lobby'],['R13','Lobby, recepción'],['R14','Café']];
+        const g = document.getElementById('gal');
+        for (const [f, t] of R) {
+          const fig = document.createElement('figure');
+          fig.innerHTML = `<img src="assets/renders/${f}.jpg" alt="${t}" loading="lazy"><figcaption>${t}</figcaption>`;
+          fig.querySelector('img').onerror = () => fig.remove();
+          fig.onclick = () => { const d = document.createElement('div'); d.className = 'gal-full'; d.innerHTML = `<img src="assets/renders/${f}.jpg" alt="${t}">`; d.onclick = () => d.remove(); document.body.appendChild(d); };
+          g.appendChild(fig);
+        }
+      })();
+    </script>
+
+    <section class="ch ch--film" id="recorrido" data-chapter="recorrido" data-label="Recorrido">
+      <div class="film">
+        <video class="film__video" id="filmVideo" muted playsinline preload="auto" src="assets/video/recorrido.mp4"></video>
+        <div class="film__fallback" id="filmFallback"><p>El video del recorrido se suma cuando esté el render de D5.</p></div>
+        <ol class="film__steps" id="filmSteps"></ol>
+        <div class="ipad" id="ipad" aria-hidden="true">
+          <div class="ipad__screen">
+            <p class="ipad__top">Palier · Planta baja</p>
+            <p class="ipad__floor"><span id="ipadFloor">PB</span></p>
+            <span class="ipad__call">Llamar ascensor</span>
+            <p class="ipad__status" id="ipadStatus">Tocá para llamar</p>
+          </div>
+        </div>
+        <div class="film__bar"><i id="filmFill"></i></div>
+      </div>
+    </section>
+
+    <section class="ch ch--tall" id="documentacion" data-chapter="documentacion" data-label="Planos">
+      <article class="copy copy--wide">
+        <h2>Documentación técnica</h2>
+        <p>Plantas, cortes, vistas e implantación. Usá la rueda o los botones para acercarte y arrastrá para moverte por la lámina.</p>
+        <div class="tabs" role="tablist" id="docTabs"></div>
+        <div class="viewer" id="viewer" tabindex="0" aria-label="Visor de planos: rueda para hacer zoom, arrastrar para mover">
+          <div class="viewer__stage" id="viewerStage"></div>
+          <div class="viewer__meta" id="viewerMeta"></div>
+          <div class="viewer__tools">
+            <button data-zoom="in" aria-label="Acercar">+</button>
+            <button data-zoom="out" aria-label="Alejar">−</button>
+            <button data-zoom="reset" aria-label="Ver lámina completa">1:1</button>
+          </div>
+        </div>
+        <div class="sheets" id="docSheets"></div>
+        <label class="cut">
+          <span>Cortar la maqueta</span>
+          <input type="range" id="cutRange" min="0" max="1" step="0.001" value="0.5" />
+        </label>
+      </article>
+    </section>
+
+    <section class="ch ch--tall" id="arte" data-chapter="arte" data-label="Arte">
+      <article class="copy copy--wide">
+        <h2>Obras de autor</h2>
+        <p>Esculturas y pinturas que forman parte del proyecto, en el lugar donde se ubican.</p>
+        <div class="art" id="artGrid"></div>
+      </article>
+    </section>
+
+    <section class="ch" id="contacto" data-chapter="contacto" data-label="Créditos">
+      <article class="copy copy--end">
+        <h2 class="cast cast--small">Vestigium</h2>
+        <p>Proyecto de arquitectura. Centro de Mendoza, 32°53′11″ S · 68°50′28″ O.</p>
+        <p>Cascallares, Valentina · Matta, Valentino · Soler, Julieta. Arquitectura 3-C, 2026.</p>
+        <a class="cta" href="#hero">Volver al inicio</a>
+        <p class="foot">Imágenes y datos ilustrativos. Entorno urbano basado en OpenStreetMap.</p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

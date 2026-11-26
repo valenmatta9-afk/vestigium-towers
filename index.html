@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="Vestigium Towers">
+<meta property="og:description" content="Torre de hormigón visto en el centro de Mendoza. Arquitectura 3-C, 2026.">
+<meta property="og:image" content="thumb.jpg">
+<title>Vestigium Towers</title>
+<meta name="description" content="Vestigium Towers: torre de hormigón visto en el centro de Mendoza. Proyecto de Arquitectura 3-C, 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+/* Layout: lámina de entrega — croquis a la derecha, rótulo a la izquierda; en celular, croquis arriba y botones al pie */
+:root {
+  --paper: #ffffff;
+  --ink: #2a2724;
+  --muted: #6d6862;
+  --line: #d6d2cb;
+  --accent: #6b2433;
+  --on-accent: #ffffff;
+  --display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --text: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --ui: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sketch-filter: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1e1c1a; --ink: #ece8e1; --muted: #a59f96; --line: #3d3934;
+    --accent: #c9788a; --on-accent: #1e1c1a; --sketch-filter: invert(1) brightness(.92);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #1e1c1a; --ink: #ece8e1; --muted: #a59f96; --line: #3d3934;
+  --accent: #c9788a; --on-accent: #1e1c1a; --sketch-filter: invert(1) brightness(.92);
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { margin: 0; }
+* { box-sizing: border-box; }
+img { max-width: 100%; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--text);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sheet {
+  max-width: 1180px; min-height: 100%; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center; gap: clamp(24px, 5vw, 72px);
+  padding-block: clamp(24px, 5vh, 56px);
+}
+.label {
+  font-family: var(--ui); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+  margin: 0;
+}
+h1 {
+  font-family: var(--display); font-weight: 900; text-transform: uppercase; line-height: .86;
+  font-size: clamp(64px, 11vw, 148px); letter-spacing: .005em; margin: .2em 0 .18em;
+  text-wrap: balance;
+}
+h1 span { display: block; font-weight: 700; color: var(--accent); }
+.lead { font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; max-width: 34ch; margin: 0 0 32px; }
+.lead em { font-style: italic; }
+.actions { display: grid; gap: 12px; max-width: 420px; }
+.btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 60px; padding: 0 22px;
+  font-family: var(--ui); font-size: 16px; font-weight: 500; text-decoration: none;
+  border: 1.5px solid var(--ink); color: var(--ink); background: transparent;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.btn small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; transition: color .2s; }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn--primary small { color: var(--on-accent); opacity: .8; }
+.btn:hover, .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.btn:hover small, .btn:focus-visible small { color: var(--paper); opacity: .8; }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.btn svg { flex: none; }
+.stamp {
+  margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: auto auto; justify-content: start; column-gap: 28px; row-gap: 6px;
+  font-family: var(--ui); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.stamp b { font-weight: 500; color: var(--ink); display: block; }
+.figure { margin: 0; display: flex; justify-content: center; }
+.figure img {
+  width: auto; max-width: 100%; max-height: calc(100vh - 80px); height: auto;
+  filter: var(--sketch-filter);
+  animation: draw 1.4s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes draw { from { opacity: .0; transform: translateY(12px); clip-path: inset(100% 0 0 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) { .figure img { animation: none; } }
+@media (max-width: 760px) {
+  .sheet { grid-template-columns: minmax(0, 1fr); gap: 8px; padding-block: 20px 32px; align-items: start; }
+  .figure { order: -1; }
+  .figure img { max-height: 46vh; }
+  h1 { font-size: clamp(56px, 19vw, 96px); }
+  .lead { margin-bottom: 24px; }
+  .actions { max-width: none; }
+  .stamp { grid-template-columns: 1fr; }
+}
+</style>
+
+</head>
+<body>
+<main class="sheet">
+  <section class="text">
+    <p class="label">Arquitectura 3-C · 2026</p>
+    <h1>Vestigium <span>Towers</span></h1>
+    <p class="lead">Una torre de hormigón visto de unos 70&nbsp;m sobre un basamento de amenities con parque elevado, en el centro de Mendoza. <em>Vestigium</em> es huella: la marca que deja cada tabla del encofrado.</p>
+    <nav class="actions" aria-label="Contenido del proyecto">
+      <a class="btn btn--primary" href="web/index.html">
+        <span>Ver la página web<small>Maqueta 3D, renders y recorrido</small></span>
+        <svg width="26" height="14" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h24M19 1l6 6-6 6"/></svg>
+      </a>
+      <a class="btn" href="web/documentacion.html">
+        <span>Documentación técnica<small>Plantas, cortes, fachadas y detalles</small></span>
+        <svg width="26" height="14" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h24M19 1l6 6-6 6"/></svg>
+      </a>
+    </nav>
+    <div class="stamp">
+      <span><b>Ubicación</b>32°53′11″ S · 68°50′28″ O</span>
+      <span><b>Autores</b>Cascallares · Matta · Soler</span>
+    </div>
+  </section>
+  <figure class="figure">
+    <img src="sketch.jpg" width="1549" height="2573" alt="Croquis a mano alzada de Vestigium Towers: torre residencial y basamento de amenities">
+  </figure>
+</main>
+</body>
+</html>
