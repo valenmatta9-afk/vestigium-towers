@@ -33,7 +33,7 @@ export const TOWERS = {
     title: 'Torre residencial',
     text:
       'La torre se levanta sobre el basamento con plantas tipo de departamentos, una terraza ' +
-      'común a mitad de altura y dúplex en los últimos niveles, con ascensores vidriados.',
+      'común a mitad de altura y penthouses en los últimos niveles, con ascensores vidriados.',
   },
 };
 
@@ -51,7 +51,7 @@ export const AMENITIES = [
 export const UNITS = [
   { name: 'Planta tipo 1 · pisos 2 a 9', rooms: 'Departamentos', area: 'ver lámina' },
   { name: 'Planta tipo 2 · pisos 11 a 15', rooms: 'Departamentos', area: 'ver lámina' },
-  { name: 'Dúplex · últimos niveles', rooms: 'Dúplex', area: 'ver lámina' },
+  { name: 'Penthouse · últimos niveles', rooms: 'Penthouse', area: 'ver lámina' },
 ];
 
 // Recorrido: cada paso ocupa una porción del video "assets/video/recorrido.mp4".
@@ -114,5 +114,6 @@ export const ARTE = [
   { type: 'Pintura', title: 'Almendro en flor (1890)', author: 'Vincent van Gogh', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/van-gogh.jpg' },
   { type: 'Pintura', title: 'Nenúfares', author: 'Claude Monet', tech: 'óleo sobre tela', place: 'Penthouse', img: 'assets/arte/monet.jpg' },
   { type: 'Pintura', title: 'La última cena (1495–1498)', author: 'Leonardo da Vinci', tech: 'temple y óleo sobre yeso', place: 'Departamentos', img: 'assets/arte/leonardo.jpg' },
+  { type: 'Pintura mural', title: 'Quinta fachada · la pintura bajo la ruina', author: 'Diseño del proyecto', tech: 'pintura bajo revoque grueso tipo ruina', place: 'Intradós del voladizo, sobre la terraza del piso 10', img: 'assets/arte/quinta-fachada.jpg' },
   { type: 'Escultura', title: 'Figura en bronce (título a confirmar)', author: 'Autor a confirmar', tech: 'bronce patinado con apliques dorados', place: 'Penthouse', img: 'assets/arte/escultura.jpg' },
 ];
