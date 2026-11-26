@@ -35,6 +35,7 @@ figure img { display:block; width:100%; height:auto; aspect-ratio: 2583 / 1825; 
 figcaption { display:flex; justify-content:space-between; gap:12px; font-size:14px; padding:8px 0; border-bottom:1px solid var(--line); }
 figcaption span { color:var(--muted); font-variant-numeric: tabular-nums; }
 a:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.note { font-size:15px; line-height:1.55; color:var(--ink); margin:10px 0 0; max-width:62ch; border-left:3px solid var(--accent); padding-left:12px; }
 .hint { font-size:13px; color:var(--muted); margin-top:6px; }
 </style>
 </head>
@@ -58,7 +59,7 @@ document.getElementById('jump').innerHTML = Object.keys(DOCS).map((k) => `<a hre
 document.getElementById('docs').innerHTML = Object.entries(DOCS).map(([k, list]) => `
   <section><h2 id="${k}">${names[k] || k}</h2><div class="grid">${list.map((d) => `
     <figure><a href="${esc(d.src)}" target="_blank" rel="noopener"><img src="${esc(d.src)}" alt="${esc(d.title)}" loading="lazy" width="2583" height="1825"></a>
-    <figcaption>${esc(d.title)}<span>${esc(d.code)}</span></figcaption></figure>`).join('')}</div></section>`).join('');
+    <figcaption>${esc(d.title)}<span>${esc(d.code)}</span></figcaption>${d.note ? `<p class="note">${esc(d.note)}</p>` : ''}</figure>`).join('')}</div></section>`).join('');
 </script>
 </body>
 </html>
