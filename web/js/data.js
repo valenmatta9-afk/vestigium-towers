@@ -85,7 +85,7 @@ export const FLOORS = [
 ];
 
 // Renders de D5 (assets/renders/d5/). floors: ids de FLOORS donde se muestran al tocar ese piso.
-const D5 = (n) => `assets/renders/d5/escena-${String(n).padStart(2, '0')}.jpg`;
+const D5 = (n) => `assets/renders/escena-${String(n).padStart(2, '0')}.jpg`;
 const DEPTOS = ['p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p11', 'p12', 'p13', 'p14', 'p15'];
 export const RENDERS = [
   { src: 'assets/renders/hero-aerea.jpg', title: 'Vista aérea del conjunto en el centro de Mendoza', floors: [] },
