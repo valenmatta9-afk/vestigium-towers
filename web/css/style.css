@@ -223,7 +223,27 @@ body.has-floor .floors .hint, body.has-floor #introText { display: none; }
 .gal figcaption { font-size: .85rem; padding: .4rem .6rem; color: #DCD9D2; }
 .gal-full { position: fixed; inset: 0; z-index: 99; background: rgba(20, 18, 16, .94); display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
 .gal-full img { max-width: 96vw; max-height: 92vh; }
-body[data-chapter='renders'] #gl, body[data-chapter='arte'] #gl, body[data-chapter='quinta'] #gl { opacity: 0.18; }
+body[data-chapter='renders'] #gl, body[data-chapter='arte'] #gl { opacity: 0.18; }
+.gal__nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; }
+.gal__nav a { font-size: 15px; color: var(--text-dim); text-decoration: none; border-bottom: 1px solid transparent; }
+.gal__nav a:hover { color: var(--text); border-color: var(--malbec-light); }
+.gal__h { font-family: var(--display); font-weight: 700; font-size: 30px; margin: 34px 0 0; scroll-margin-top: 90px; }
+.gal__h small { font-family: var(--serif); font-weight: 400; font-size: 15px; color: var(--text-dim); }
+.gal__h + .gal { margin-top: 12px; }
+
+/* Quinta fachada: primero se ve el voladizo desde abajo, después baja el texto */
+#quinta { min-height: 260vh; padding-top: 95vh; }
+#quinta .copy--wide { margin-top: 0; }
+.qf__render { margin: 1.4rem 0 0; cursor: zoom-in; }
+.qf__render img { display: block; width: 100%; height: auto; }
+
+/* ── Fachadas ── */
+.ch--facade { min-height: 190vh; }
+.fa { max-width: 26rem; }
+.fa__n { font-size: 14px; color: var(--malbec-light) !important; margin-bottom: 6px; }
+.fa__sheet { margin-top: 20px; cursor: zoom-in; background: var(--yeso); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4); }
+.fa__sheet img { display: block; width: 100%; aspect-ratio: 2583 / 1825; object-fit: contain; }
+.fa__sheet figcaption { font-size: 13px; color: var(--encofrado); padding: 6px 10px; }
 
 /* ── Quinta fachada ── */
 .qf__lead { font-size: 1.1em; }
