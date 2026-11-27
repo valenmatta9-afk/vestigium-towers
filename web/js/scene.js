@@ -16,6 +16,13 @@ const FRONT_ROT = Math.PI / 2; // gira el modelo para que el frente (rampa + lob
 const SHOTS = {
   hero:          [[-110, 45, 160], [0, 32, 0]],
   edificio:      [[115, 105, 125], [0, 33, 0]],
+  // Fachadas: el norte es −z y el este es +x en el mundo (entorno de OSM)
+  'fachada-este':  [[175, 34, 0], [0, 32, 0]],
+  'fachada-sur':   [[0, 34, 175], [0, 32, 0]],
+  'fachada-oeste': [[-175, 34, 0], [0, 32, 0]],
+  'fachada-norte': [[0, 34, -175], [0, 32, 0]],
+  // Quinta fachada: desde abajo, mirando hacia arriba al voladizo del piso 11
+  quinta:          [[8, 31, 30], [-1, 41.5, 3]],
   conjunto:      [[125, 95, 135], [0, 25, 0]],
   amenities:     [[-95, 38, 80], [-17, 6, 0]],
   residencial:   [[85, 80, 75], [3, 42, 0]],
@@ -314,6 +321,14 @@ export function createScene(canvas, chapterIds, floorList = []) {
       return id;
     },
     setFloor(id) { selFloor = id && floors.has(id) ? id : null; },
+    // Caja del piso en coordenadas del mundo (para encuadres)
+    floorBox(id) {
+      const f = floors.get(id);
+      if (!f || f.box.isEmpty()) return null;
+      const pts = [];
+      for (const x of [f.box.min.x, f.box.max.x]) for (const z of [f.box.min.z, f.box.max.z]) pts.push(site.localToWorld(new THREE.Vector3(x, f.box.min.y, z)));
+      return new THREE.Box3().setFromPoints(pts);
+    },
     whenReady(fn) { if (modelReady) fn(); else onReady.push(fn); },
   };
 

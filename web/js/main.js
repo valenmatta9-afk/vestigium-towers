@@ -1,4 +1,4 @@
-import { PROJECT, FLOORS, RENDERS, RECORRIDO, DOCS, ARTE } from './data.js';
+import { PROJECT, FLOORS, FACHADAS, RENDERS, RECORRIDO, DOCS, ARTE } from './data.js';
 import { createScene } from './scene.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -22,9 +22,38 @@ function openFull(src, alt) {
   d.onclick = () => d.remove();
   document.body.appendChild(d);
 }
-$('#gal').innerHTML = RENDERS.map((r, i) => `
-  <figure data-i="${i}"><img src="${esc(r.src)}" alt="${esc(r.title)}" loading="lazy"><figcaption>${esc(r.title)}</figcaption></figure>`).join('');
-$$('#gal figure').forEach((f) => { f.onclick = () => openFull(RENDERS[+f.dataset.i].src, RENDERS[+f.dataset.i].title); });
+// Galería por piso, de abajo hacia arriba (los deptos tipo van juntos)
+const galGroups = [{ id: 'exterior', name: 'Exterior', items: RENDERS.filter((r) => !r.floors.length) }];
+const seen = new Set();
+for (const f of FLOORS) {
+  const items = RENDERS.filter((r) => r.floors[0] === f.id && !seen.has(r));
+  if (!items.length) continue;
+  items.forEach((r) => seen.add(r));
+  const tipo = f.id.startsWith('p') && items.every((r) => r.floors.length > 1);
+  galGroups.push({ id: `g-${f.id}`, name: tipo ? 'Departamentos tipo' : f.name, items });
+}
+$('#galNav').innerHTML = galGroups.map((g) => `<a href="#${g.id}">${esc(g.name)}</a>`).join('');
+$('#gal').innerHTML = galGroups.map((g) => `
+  <h3 class="gal__h" id="${g.id}">${esc(g.name)} <small>${g.items.length}</small></h3>
+  <div class="gal">${g.items.map((r) => `<figure data-src="${esc(r.src)}" data-t="${esc(r.title)}"><img src="${esc(r.src)}" alt="${esc(r.title)}" loading="lazy"><figcaption>${esc(r.title)}</figcaption></figure>`).join('')}</div>`).join('');
+$$('#gal figure').forEach((f) => { f.onclick = () => openFull(f.dataset.src, f.dataset.t); });
+
+// Fachadas: un capítulo por fachada (la maqueta gira hacia cada una)
+const L = (n) => `assets/planos/paginas/lamina-${String(n).padStart(2, '0')}.jpg`;
+$('#fachadas').innerHTML = FACHADAS.map((f, i) => `
+  <section class="ch ch--facade" id="${f.id}" data-chapter="${f.id}" data-label="${esc(f.name)}">
+    <article class="copy fa">
+      <p class="fa__n">Fachadas · ${i + 1} de ${FACHADAS.length + 1}</p>
+      <h2>${esc(f.name)}</h2>
+      <p>${esc(f.text)}</p>
+      <figure class="fa__sheet" data-src="${L(f.sheet)}" data-t="${esc(f.name)} (${f.code})">
+        <img src="${L(f.sheet)}" alt="Lámina de la ${esc(f.name.toLowerCase())}" loading="lazy">
+        <figcaption>Lámina ${f.code}. Tocala para verla grande.</figcaption>
+      </figure>
+    </article>
+  </section>`).join('');
+$$('.fa__sheet').forEach((f) => { f.onclick = () => openFull(f.dataset.src, f.dataset.t); });
+$$('[data-full]').forEach((f) => { f.onclick = () => openFull(f.dataset.full, f.querySelector('img').alt); });
 
 $('#filmSteps').innerHTML = RECORRIDO.map((s, i) => `
   <li class="step"><span class="step__n">Paso ${i + 1} de ${RECORRIDO.length}</span>
@@ -37,6 +66,7 @@ $('#artGrid').innerHTML = ARTE.map((a) => `
 const sections = $$('[data-chapter]', $('main'));
 const ids = sections.map((s) => s.dataset.chapter);
 const scene = createScene($('#gl'), ids, FLOORS);
+window.__scene = scene;
 
 // Precarga
 const loader = $('#loader');

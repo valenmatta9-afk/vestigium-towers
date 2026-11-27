@@ -84,6 +84,18 @@ export const FLOORS = [
     text: 'Penthouse en dos niveles pensado para un astrólogo: biblioteca, esfera armilar y el observatorio vidriado con telescopio en lo más alto.' },
 ];
 
+// Fachadas: la maqueta gira para mirar cada una; al lado, la lámina de la vista.
+export const FACHADAS = [
+  { id: 'fachada-este', name: 'Fachada este', sheet: 14, code: 'VS-E',
+    text: 'El frente sobre la calle: el acceso al lobby, la rampa a las cocheras y el basamento con el parque elevado. Arriba, la torre muestra el hormigón visto con la marca de las tablas del encofrado.' },
+  { id: 'fachada-sur', name: 'Fachada sur', sheet: 12, code: 'VS-S',
+    text: 'Desde el sur se lee el corrimiento de la torre: las plantas tipo 1 abajo, la terraza común a mitad de altura y el volumen de arriba que vuela sobre ella.' },
+  { id: 'fachada-oeste', name: 'Fachada oeste', sheet: 15, code: 'VS-O',
+    text: 'El contrafrente mira a la cordillera. Los balcones continuos y las carpinterías protegen del sol de la tarde.' },
+  { id: 'fachada-norte', name: 'Fachada norte', sheet: 13, code: 'VS-N',
+    text: 'La cara más asoleada: los ventanales de los departamentos y los ascensores vidriados que recorren la torre.' },
+];
+
 // Renders de D5 (assets/renders/d5/). floors: ids de FLOORS donde se muestran al tocar ese piso.
 const D5 = (n) => `assets/renders/escena-${String(n).padStart(2, '0')}.jpg`;
 const DEPTOS = ['p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p11', 'p12', 'p13', 'p14', 'p15'];
@@ -115,6 +127,16 @@ export const RENDERS = [
     [30, 'Gimnasio', 'gimnasio'],
     [31, 'SUM · cocina', 'sum'],
     [32, 'SUM · mesas', 'sum'],
+    [9, 'Terraza común · piso 10', 'terraza'],
+    [10, 'Terraza común · mesas bajo el voladizo', 'terraza'],
+    [11, 'La quinta fachada vista desde la terraza', 'terraza'],
+    [7, 'Penthouse Músico · estar con piano en doble altura', 'ph-musico'],
+    [6, 'Penthouse Músico · sala de música', 'ph-musico'],
+    [8, 'Penthouse Astrólogo · estar hundido', 'ph-astrologo'],
+    [5, 'Penthouse Astrólogo · escalera y biblioteca', 'ph-astrologo'],
+    [12, 'Departamento · cocina y comedor', DEPTOS],
+    [13, 'Departamento · estar y comedor', DEPTOS],
+    [14, 'Departamento · estar con biblioteca', DEPTOS],
     [15, 'Departamento · estar', DEPTOS],
     [16, 'Departamento · comedor', DEPTOS],
     [17, 'Departamento · comedor con La última cena', DEPTOS],
