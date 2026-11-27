@@ -164,8 +164,40 @@ window.addEventListener('pointermove', (e) => {
     document.body.style.cursor = 'pointer';
   } else hideTip();
 });
+// Zoom y giro sobre el piso abierto: rueda / pellizco para acercar, arrastrar para girar
+let dragFloor = null, dragMoved = false;
+const pinch = new Map();
+window.addEventListener('wheel', (e) => {
+  if (activeId !== 'edificio' || !current || overUI(e)) return;
+  e.preventDefault();
+  scene.zoomFloor(e.deltaY > 0 ? 1.12 : 1 / 1.12);
+}, { passive: false });
+window.addEventListener('pointerdown', (e) => {
+  if (activeId !== 'edificio' || !current || overUI(e)) return;
+  pinch.set(e.pointerId, e.clientX + ',' + e.clientY);
+  dragFloor = { x: e.clientX, d: 0 }; dragMoved = false;
+});
+window.addEventListener('pointermove', (e) => {
+  if (!dragFloor || !current) return;
+  if (pinch.size === 2 && pinch.has(e.pointerId)) {
+    const pts = [...pinch.entries()].map(([id, v]) => (id === e.pointerId ? [e.clientX, e.clientY] : v.split(',').map(Number)));
+    const dist = Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]);
+    if (dragFloor.d) scene.zoomFloor(dragFloor.d / dist);
+    dragFloor.d = dist;
+    pinch.set(e.pointerId, e.clientX + ',' + e.clientY);
+    dragMoved = true;
+    return;
+  }
+  const dx = e.clientX - dragFloor.x;
+  if (Math.abs(dx) > 3) { scene.orbitFloor(-dx * 0.006); dragFloor.x = e.clientX; dragMoved = true; }
+});
+const endDrag = (e) => { pinch.delete(e.pointerId); if (!pinch.size) dragFloor = null; };
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+
 window.addEventListener('click', (e) => {
   if (activeId !== 'edificio' || overUI(e)) return;
+  if (dragMoved) { dragMoved = false; return; }
   const id = scene.pickFloor(...ndc(e));
   if (id) selectFloor(id === current ? null : id);
 });

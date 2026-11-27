@@ -162,6 +162,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
   hoverBox.visible = false;
   site.add(hoverBox);
   let selFloor = null, hoverFloor = null, modelReady = false;
+  let floorZoom = 1, floorOrbit = 0; // acercar/alejar y girar alrededor del piso elegido
   const onReady = [];
   loadModel('assets/model/vestigium.glb');
 
@@ -219,9 +220,10 @@ export function createScene(canvas, chapterIds, floorList = []) {
       c.y = fl.def.y0 + 1;
       site.localToWorld(c);
       const size = fl.box.getSize(new THREE.Vector3());
-      const d = Math.max(size.x, size.z) * 1.3 + 10;
+      const d = (Math.max(size.x, size.z) * 1.3 + 10) * floorZoom;
       const ref = SHOTS.edificio;
-      const dir = new THREE.Vector3(ref[0][0] - ref[1][0], 0, ref[0][2] - ref[1][2]).normalize();
+      const dir = new THREE.Vector3(ref[0][0] - ref[1][0], 0, ref[0][2] - ref[1][2]).normalize()
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), floorOrbit);
       // corre el encuadre para que el piso quede a la derecha del texto (en celular, centrado)
       const side = window.innerWidth > 900 ? d * 0.22 : 0;
       const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
@@ -320,7 +322,9 @@ export function createScene(canvas, chapterIds, floorList = []) {
       hoverFloor = id;
       return id;
     },
-    setFloor(id) { selFloor = id && floors.has(id) ? id : null; },
+    setFloor(id) { selFloor = id && floors.has(id) ? id : null; floorZoom = 1; floorOrbit = 0; },
+    zoomFloor(f) { floorZoom = Math.min(1.8, Math.max(0.22, floorZoom * f)); },
+    orbitFloor(a) { floorOrbit += a; },
     // Caja del piso en coordenadas del mundo (para encuadres)
     floorBox(id) {
       const f = floors.get(id);
@@ -480,6 +484,9 @@ export function createScene(canvas, chapterIds, floorList = []) {
       fl.group.add(mesh);
       fl.furnished = true;
     }
+    const porPiso = {};
+    for (const { fl, pos } of buckets.values()) porPiso[fl.def.id] = (porPiso[fl.def.id] || 0) + pos.length / 9;
+    window.__muebles = porPiso;
     console.info(`Equipamiento: ${tris} triángulos en ${buckets.size} mallas`);
   }
 
