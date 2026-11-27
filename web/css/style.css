@@ -34,12 +34,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ── Capas fijas ── */
 #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; transition: opacity 0.8s ease; }
 body[data-chapter='recorrido'] #gl { opacity: 0.12; }
-/* Fondo fotorrealista: un render de D5 por seccion. El modelo 3D solo se ve en planta y planos. */
-.photo { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: var(--encofrado); }
-.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; will-change: transform, opacity;
-  transition: opacity .35s linear; }
-body.has-photo #gl { opacity: 0; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .photo img { transition: opacity .3s; transform: none !important; } }
 .veil {
   position: fixed; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(90deg, rgba(42, 39, 35, 0.78) 0%, rgba(42, 39, 35, 0.42) 34%, rgba(42, 39, 35, 0) 58%);
@@ -192,8 +186,61 @@ main { position: relative; z-index: 5; }
 .cta:hover { background: var(--yeso); color: var(--encofrado); }
 .foot { margin-top: 44px; font-size: 14px; }
 
+/* ── Portada con la vista aérea ── */
+.ch--hero { padding: 0; }
+.hero { overflow: hidden; isolation: isolate; padding: 0 var(--gut) 14vh var(--junta); }
+.hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; animation: heroIn 9s ease-out both; }
+.hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(42, 39, 35, 0.92) 0%, rgba(42, 39, 35, 0.35) 42%, rgba(42, 39, 35, 0.1) 70%, rgba(42, 39, 35, 0.45) 100%); }
+.hero__text { position: relative; }
+@keyframes heroIn { from { transform: scale(1.08); } to { transform: scale(1); } }
+body[data-chapter='hero'] #gl { opacity: 0; }
+
+/* ── Edificio piso por piso ── */
+.ch--floors { min-height: 260vh; }
+.floors { max-width: 27rem; top: 12vh; margin-top: 14vh; }
+.floors h2 { font-size: clamp(40px, 4.6vw, 72px); }
+.floors__list { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+.floors__group span { display: block; font-size: 14px; color: var(--text-dim); border-bottom: 1px solid rgba(168, 163, 154, 0.35); padding-bottom: 4px; margin-bottom: 4px; }
+.floors__group button { display: block; width: 100%; text-align: left; padding: 3px 0; font-size: 15px; color: var(--text-dim); transition: color 0.2s, padding 0.25s; }
+.floors__group button:hover { color: var(--text); padding-left: 6px; }
+.floors__group button.is-on { color: var(--text); padding-left: 6px; box-shadow: inset 2px 0 0 var(--malbec-light); }
+body.has-floor .floors__list { display: none; }
+body.has-floor .floors .hint, body.has-floor #introText { display: none; }
+.floor { margin-top: 18px; padding: 18px 0 0; border-top: 1px solid rgba(168, 163, 154, 0.35); }
+.floor__kind { font-size: 14px; color: var(--malbec-light) !important; }
+.floor h3 { font-family: var(--display); font-weight: 700; font-size: clamp(36px, 3.6vw, 56px); line-height: 0.95; margin: 4px 0 10px; }
+.floor__media { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 14px; }
+.floor__media:empty { display: none; }
+.floor__media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; cursor: zoom-in; display: block; }
+.floor__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.cta--small { margin-top: 0; padding: 8px 14px; font-size: 15px; }
+
+/* ── Renders ── */
+.gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 1.5rem; }
+.gal figure { margin: 0; background: #3A3631; cursor: zoom-in; overflow: hidden; }
+.gal img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; transition: transform 0.6s; }
+.gal figure:hover img { transform: scale(1.04); }
+.gal figcaption { font-size: .85rem; padding: .4rem .6rem; color: #DCD9D2; }
+.gal-full { position: fixed; inset: 0; z-index: 99; background: rgba(20, 18, 16, .94); display: flex; align-items: center; justify-content: center; cursor: zoom-out; }
+.gal-full img { max-width: 96vw; max-height: 92vh; }
+body[data-chapter='renders'] #gl, body[data-chapter='arte'] #gl, body[data-chapter='quinta'] #gl { opacity: 0.18; }
+
+/* ── Quinta fachada ── */
+.qf__lead { font-size: 1.1em; }
+.qf__pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin: 1.5rem 0; }
+.qf figure { margin: 0; }
+.qf figure img { display: block; width: 100%; height: auto; aspect-ratio: 630 / 615; object-fit: cover; }
+.qf figcaption { font-size: .9em; line-height: 1.45; margin-top: .5rem; opacity: .85; }
+.qf__h { font-family: var(--display); font-size: 1.6rem; margin: 1.6rem 0 .6rem; }
+.qf__steps { padding-left: 1.3rem; display: grid; gap: .7rem; margin: 0 0 1.2rem; color: var(--text-dim); }
+.qf__plan { margin-top: 1.5rem !important; }
+.qf__plan img { aspect-ratio: 2583 / 1825 !important; background: #e4e1dc; }
+
 /* ── Móvil ── */
 @media (max-width: 900px) {
+  .floors { margin-top: 58vh; }
+  .floors__list { grid-template-columns: 1fr; }
+  .hero { padding: 0 16px 14vh var(--junta); }
   :root { --junta: 32px; }
   body { font-size: 17px; }
   .nav { display: none; }
