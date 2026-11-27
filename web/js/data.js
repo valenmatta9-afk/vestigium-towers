@@ -104,6 +104,10 @@ const DEPTOS = ['p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p11', 'p12', 'p
 const R = 'assets/renders/real/';
 export const RENDERS = [
   { src: 'assets/renders/hero-aerea.jpg', title: 'Vista aérea del conjunto en el centro de Mendoza', floors: [] },
+  { src: 'assets/renders/exterior-01.jpg', title: 'El conjunto completo, vista aérea', floors: [] },
+  { src: 'assets/renders/exterior-02.jpg', title: 'El basamento y la torre desde la calle', floors: [] },
+  { src: 'assets/renders/exterior-03.jpg', title: 'El corrimiento de la torre', floors: [] },
+  { src: 'assets/renders/exterior-04.jpg', title: 'La torre y el voladizo sobre la terraza', floors: [] },
   // Renders pasados por Gemini antes (los primeros)
   { src: R + 'parque.jpg', title: 'Parque elevado sobre el cowork', floors: ['parque'] },
   { src: R + 'terraza.jpg', title: 'Terraza', floors: ['terraza'] },
