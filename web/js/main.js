@@ -1,4 +1,4 @@
-import { PROJECT, TOWERS, AMENITIES, UNITS, RECORRIDO, DOCS, ARTE } from './data.js';
+import { PROJECT, FLOORS, RENDERS, RECORRIDO, DOCS, ARTE } from './data.js';
 import { createScene } from './scene.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -7,14 +7,25 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 
 // ── Contenido desde data.js ─────────────────────────
 $('#introText').textContent = PROJECT.intro;
-for (const [k, pre] of [['amenities', 'ta'], ['residencial', 'tb']]) {
-  $(`#${pre}Title`).textContent = TOWERS[k].title;
-  $(`#${pre}Text`).textContent = TOWERS[k].text;
+
+// Lista de pisos (de arriba hacia abajo, como el edificio)
+const groups = ['Torre', 'Basamento'];
+$('#floorList').innerHTML = groups.map((g) => `
+  <div class="floors__group"><span>${g}</span>${FLOORS.filter((f) => f.group === g).slice().reverse()
+    .map((f) => `<button data-floor="${f.id}">${esc(f.name)}</button>`).join('')}</div>`).join('');
+
+// Galería de renders
+function openFull(src, alt) {
+  const d = document.createElement('div');
+  d.className = 'gal-full';
+  d.innerHTML = `<img src="${esc(src)}" alt="${esc(alt)}">`;
+  d.onclick = () => d.remove();
+  document.body.appendChild(d);
 }
-$('#amenityList').innerHTML = AMENITIES.map((a) => `
-  <li><strong>${esc(a.name)}</strong><span class="lvl">${esc(a.level)}</span>
-  <small>${esc(a.area)}. ${esc(a.text)}</small></li>`).join('');
-$('#unitList').innerHTML = UNITS.map((u) => `<div><dt>${esc(u.name)}</dt><dd>${esc(u.rooms)}, ${esc(u.area)}</dd></div>`).join('');
+$('#gal').innerHTML = RENDERS.map((r, i) => `
+  <figure data-i="${i}"><img src="${esc(r.src)}" alt="${esc(r.title)}" loading="lazy"><figcaption>${esc(r.title)}</figcaption></figure>`).join('');
+$$('#gal figure').forEach((f) => { f.onclick = () => openFull(RENDERS[+f.dataset.i].src, RENDERS[+f.dataset.i].title); });
+
 $('#filmSteps').innerHTML = RECORRIDO.map((s, i) => `
   <li class="step"><span class="step__n">Paso ${i + 1} de ${RECORRIDO.length}</span>
   <h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></li>`).join('');
@@ -25,7 +36,7 @@ $('#artGrid').innerHTML = ARTE.map((a) => `
 // ── Escena 3D ───────────────────────────────────────
 const sections = $$('[data-chapter]', $('main'));
 const ids = sections.map((s) => s.dataset.chapter);
-const scene = createScene($('#gl'), ids);
+const scene = createScene($('#gl'), ids, FLOORS);
 
 // Precarga
 const loader = $('#loader');
@@ -62,7 +73,7 @@ function onScroll() {
     navLinks.forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === `#${id}`));
     $('#railLabel').textContent = sections[idx].dataset.label;
     scene.setSection(id === 'documentacion', +$('#cutRange').value);
-    if (!['hero', 'conjunto'].includes(id)) hideTip();
+    if (id !== 'edificio') { hideTip(); if (current) selectFloor(null); }
   }
   $('#railFill').style.height = `${(f / (ids.length - 1)) * 100}%`;
   updateFilm();
@@ -70,27 +81,58 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive: true });
 window.addEventListener('resize', onScroll);
 
-// ── Torres clicables ───────────────────────────────
+// ── Pisos clicables ────────────────────────────────
 const tip = $('#tip');
-const canvas = $('#gl');
+const card = $('#floorCard');
+let current = null;
+const floorById = Object.fromEntries(FLOORS.map((f) => [f.id, f]));
 function hideTip() { tip.classList.remove('is-on'); scene.clearHover(); document.body.style.cursor = ''; }
 function ndc(e) { return [(e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1]; }
+const overUI = (e) => e.target.closest('.copy, .top, button, a, .gal-full');
+
+function selectFloor(id) {
+  current = id;
+  scene.setFloor(id);
+  document.body.classList.toggle('has-floor', !!id);
+  $$('#floorList button').forEach((b) => b.classList.toggle('is-on', b.dataset.floor === id));
+  if (!id) { card.hidden = true; return; }
+  const f = floorById[id];
+  $('#floorKind').textContent = f.kind;
+  $('#floorName').textContent = f.name;
+  $('#floorText').textContent = f.text;
+  const rs = RENDERS.filter((r) => (r.floors || []).includes(id)).slice(0, 6);
+  $('#floorMedia').innerHTML = rs.map((r) => `<img src="${esc(r.src)}" alt="${esc(r.title)}" loading="lazy" title="${esc(r.title)}">`).join('');
+  $$('#floorMedia img').forEach((im, k) => { im.onclick = () => openFull(rs[k].src, rs[k].title); });
+  $('#floorPlan').hidden = !f.plan;
+  card.hidden = false;
+}
+$$('#floorList button').forEach((b) => b.addEventListener('click', () => selectFloor(current === b.dataset.floor ? null : b.dataset.floor)));
+$('#floorClose').addEventListener('click', () => selectFloor(null));
+$('#floorPlan').addEventListener('click', () => {
+  const f = floorById[current];
+  if (!f?.plan) return;
+  const k = DOCS.plantas.findIndex((d) => d.src.endsWith(`lamina-${String(f.plan).padStart(2, '0')}.jpg`));
+  goTo('documentacion');
+  showCat('plantas');
+  if (k >= 0) showSheet('plantas', k);
+});
+
 window.addEventListener('pointermove', (e) => {
   const [x, y] = ndc(e);
   scene.setPointer(x, y);
-  if (!['hero', 'conjunto'].includes(activeId) || e.target.closest('.panel, .top, button, a')) return hideTip();
-  const id = scene.pick(x, y);
+  if (activeId !== 'edificio' || overUI(e)) return hideTip();
+  const id = scene.pickFloor(x, y);
   if (id) {
-    tip.textContent = TOWERS[id].title;
+    tip.textContent = floorById[id].name;
     tip.style.left = `${e.clientX}px`; tip.style.top = `${e.clientY}px`;
     tip.classList.add('is-on');
     document.body.style.cursor = 'pointer';
   } else hideTip();
 });
 window.addEventListener('click', (e) => {
-  if (!['hero', 'conjunto'].includes(activeId) || e.target.closest('.panel, .top, button, a')) return;
-  const id = scene.pick(...ndc(e));
-  if (id) goTo(id);
+  if (activeId !== 'edificio' || overUI(e)) return;
+  const id = scene.pickFloor(...ndc(e));
+  if (id) selectFloor(id === current ? null : id);
 });
 function goTo(id) {
   const s = document.getElementById(id);

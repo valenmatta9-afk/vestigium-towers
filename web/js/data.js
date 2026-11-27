@@ -54,6 +54,74 @@ export const UNITS = [
   { name: 'Penthouse · últimos niveles', rooms: 'Penthouse', area: 'ver lámina' },
 ];
 
+// Pisos que se pueden tocar en la maqueta 3D. y0–y1: altura en metros en el modelo
+// (planta baja = 0). part: 'amenities' (basamento) o 'residencial' (torre); sin part = todo el ancho.
+const tipo = (n, y0, t) => ({
+  id: `p${n}`, name: `Piso ${n}`, group: 'Torre', part: 'residencial', y0, y1: y0 + 3.3,
+  kind: `Planta tipo ${t}`, plan: 7,
+  text: t === 1
+    ? 'Planta tipo 1 (pisos 2 a 9): departamentos con estar, comedor y cocina integrados al frente y dormitorios hacia el contrafrente, con balcón continuo.'
+    : 'Planta tipo 2 (pisos 11 a 15): departamentos sobre el voladizo, con la esquina vidriada curva y vistas a la cordillera.',
+});
+export const FLOORS = [
+  { id: 'pb', name: 'Planta baja', group: 'Basamento', y0: -1, y1: 5.9, kind: 'Lobby y café', plan: 5,
+    text: 'Acceso principal con el lobby en doble altura, el café y los ascensores vidriados. Acá están el Rothko y el Pollock.' },
+  { id: 'parque', name: 'Parque elevado', group: 'Basamento', y0: 5.9, y1: 9.2, kind: 'Nivel +6 m', plan: 6,
+    text: 'Jardín sobre el basamento, con canteros, mesas y la escalera que baja al lobby.' },
+  { id: 'cowork', name: 'Cowork', group: 'Basamento', part: 'amenities', y0: 9.2, y1: 12.5, kind: 'Amenities · nivel 1', plan: 19,
+    text: 'Espacio de trabajo compartido con puestos, salas y vista al parque.' },
+  { id: 'gimnasio', name: 'Gimnasio', group: 'Basamento', part: 'amenities', y0: 12.5, y1: 15.8, kind: 'Amenities · nivel 2', plan: 19,
+    text: 'Gimnasio con máquinas y zona de entrenamiento libre, iluminado por el frente vidriado.' },
+  { id: 'sum', name: 'SUM', group: 'Basamento', part: 'amenities', y0: 15.8, y1: 21, kind: 'Amenities · nivel 3', plan: 19,
+    text: 'Salón de usos múltiples con cocina y baño, para reuniones y eventos de los vecinos.' },
+  ...[2, 3, 4, 5, 6, 7, 8, 9].map((n, i) => tipo(n, 9.2 + i * 3.3, 1)),
+  { id: 'terraza', name: 'Terraza común', group: 'Torre', y0: 35.6, y1: 40.4, kind: 'Piso 10', plan: 6,
+    text: 'Terraza común a mitad de altura, bajo el voladizo. Arriba, la quinta fachada.' },
+  ...[11, 12, 13, 14, 15].map((n, i) => tipo(n, 40.4 + i * 3.3, 2)),
+  { id: 'ph-musico', name: 'Penthouse Músico', group: 'Torre', y0: 56.9, y1: 63.8, kind: 'Penthouse en dos niveles', plan: 9,
+    text: 'Penthouse en dos niveles pensado para un músico, con sala de música y estar en doble altura.' },
+  { id: 'ph-astrologo', name: 'Penthouse Astrólogo', group: 'Torre', y0: 63.8, y1: 72, kind: 'Penthouse en dos niveles', plan: 8,
+    text: 'Penthouse en dos niveles pensado para un astrólogo: biblioteca, esfera armilar y el observatorio vidriado con telescopio en lo más alto.' },
+];
+
+// Renders de D5 (assets/renders/d5/). floors: ids de FLOORS donde se muestran al tocar ese piso.
+const D5 = (n) => `assets/renders/d5/escena-${String(n).padStart(2, '0')}.jpg`;
+const DEPTOS = ['p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p11', 'p12', 'p13', 'p14', 'p15'];
+export const RENDERS = [
+  { src: 'assets/renders/hero-aerea.jpg', title: 'Vista aérea del conjunto en el centro de Mendoza', floors: [] },
+  ...[
+    [41, 'Lobby · el Pollock frente a los ascensores', 'pb'],
+    [38, 'Lobby · acceso principal', 'pb'],
+    [39, 'Lobby · recepción', 'pb'],
+    [35, 'Lobby · muro de ladrillo de vidrio', 'pb'],
+    [36, 'Lobby · circulación', 'pb'],
+    [34, 'Lobby · sala de espera', 'pb'],
+    [37, 'Café', 'pb'],
+    [40, 'Lobby · sala del piano', 'pb'],
+    [42, 'Palier de ascensores', 'pb'],
+    [43, 'Palier hacia el parque', 'pb'],
+    [23, 'Parque elevado · mesas bajo el voladizo', 'parque'],
+    [21, 'Parque elevado · espejos de agua', 'parque'],
+    [22, 'Parque elevado', 'parque'],
+    [18, 'Parque elevado · fogón', 'parque'],
+    [19, 'Parque elevado · canteros', 'parque'],
+    [33, 'El basamento visto desde arriba', 'parque'],
+    [24, 'Cowork · puestos de trabajo', 'cowork'],
+    [25, 'Cowork · estar', 'cowork'],
+    [26, 'Cowork · salas con cortinas', 'cowork'],
+    [27, 'Cowork', 'cowork'],
+    [28, 'Gimnasio · recepción', 'gimnasio'],
+    [29, 'Gimnasio · musculación', 'gimnasio'],
+    [30, 'Gimnasio', 'gimnasio'],
+    [31, 'SUM · cocina', 'sum'],
+    [32, 'SUM · mesas', 'sum'],
+    [15, 'Departamento · estar', DEPTOS],
+    [16, 'Departamento · comedor', DEPTOS],
+    [17, 'Departamento · comedor con La última cena', DEPTOS],
+    [20, 'Departamento · dormitorio', DEPTOS],
+  ].map(([n, title, f]) => ({ src: D5(n), title, floors: [].concat(f) })),
+];
+
 // Recorrido: cada paso ocupa una porción del video "assets/video/recorrido.mp4".
 export const RECORRIDO = [
   { n: '01', title: 'Acceso principal', text: 'Llegada bajo el gran voladizo de hormigón.' },
