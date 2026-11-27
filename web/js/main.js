@@ -1,5 +1,5 @@
-import { PROJECT, FLOORS, FACHADAS, RENDERS, RECORRIDO, DOCS, ARTE } from './data.js';
-import { createScene } from './scene.js';
+import { PROJECT, FLOORS, FACHADAS, RENDERS, RECORRIDO, DOCS, ARTE } from './data.js?v=20261127b';
+import { createScene } from './scene.js?v=20261127b';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
