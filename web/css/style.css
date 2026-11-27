@@ -214,6 +214,9 @@ body.has-floor .floors .hint, body.has-floor #introText { display: none; }
 .floor__media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; cursor: zoom-in; display: block; }
 .floor__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 .cta--small { margin-top: 0; padding: 8px 14px; font-size: 15px; }
+.floor__hint { font-size: 14px !important; font-style: italic; margin-top: 12px; }
+body.has-floor .ch--floors { touch-action: pan-y; }
+body.has-floor { cursor: grab; }
 
 /* ── Renders ── */
 .gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 1.5rem; }
