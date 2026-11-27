@@ -217,16 +217,32 @@ const video = $('#filmVideo');
 const steps = $$('.step');
 const ipad = $('#ipad');
 let hasVideo = false;
-let seekTarget = 0;
-function seek() {
-  // se usa el estado del propio video (no una bandera aparte que pueda quedar trabada)
-  if (!hasVideo || video.seeking) return;
-  if (Math.abs(video.currentTime - seekTarget) < 0.03) return;
-  video.currentTime = seekTarget;
-}
-video.addEventListener('seeked', seek);
+const soundBtn = $('#filmSound'), replayBtn = $('#filmReplay');
+let filmInView = false;
 
-const onVideo = () => { hasVideo = true; film.querySelector('.film').classList.remove('no-video'); updateFilm(); };
+// El video corre solo, con su música. Arranca al entrar en la sección y se pausa al salir.
+// Si el navegador no deja reproducir con sonido (todavía no hubo un clic en la página),
+// arranca sin sonido y aparece "Activar sonido".
+async function playFilm() {
+  if (!hasVideo || !video.paused || video.ended) return;
+  try { video.muted = false; await video.play(); soundBtn.hidden = true; }
+  catch {
+    video.muted = true;
+    try { await video.play(); } catch { /* sin reproducción automática */ }
+    soundBtn.hidden = false;
+  }
+}
+soundBtn.addEventListener('click', () => { video.muted = false; soundBtn.hidden = true; if (video.paused) video.play(); });
+replayBtn.addEventListener('click', () => { replayBtn.hidden = true; video.currentTime = 0; video.muted = false; soundBtn.hidden = true; video.play(); });
+video.addEventListener('ended', () => { replayBtn.hidden = false; soundBtn.hidden = true; });
+video.addEventListener('timeupdate', updateFilm);
+new IntersectionObserver(([e]) => {
+  filmInView = e.intersectionRatio > 0.6;
+  if (filmInView) playFilm(); else if (!video.paused) video.pause();
+  updateFilm();
+}, { threshold: [0, 0.6, 1] }).observe(film);
+
+const onVideo = () => { hasVideo = true; film.querySelector('.film').classList.remove('no-video'); updateFilm(); if (filmInView) playFilm(); };
 video.addEventListener('loadedmetadata', onVideo);
 video.addEventListener('error', () => film.querySelector('.film').classList.add('no-video'));
 // si el video ya cargó antes que este script (caché), 'loadedmetadata' no vuelve a dispararse
@@ -234,13 +250,12 @@ if (video.readyState >= 1) onVideo();
 else setTimeout(() => { if (!hasVideo) film.querySelector('.film').classList.add('no-video'); }, 2500);
 
 function updateFilm() {
-  const r = film.getBoundingClientRect();
-  const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
+  // los pasos y la barra siguen el tiempo del video (no el scroll)
+  const p = hasVideo && video.duration ? Math.min(1, video.currentTime / video.duration) : 0;
   $('#filmFill').style.width = `${p * 100}%`;
-  if (hasVideo && video.duration) { seekTarget = p * (video.duration - 0.05); seek(); }
   const n = RECORRIDO.length;
   const k = Math.min(n - 1, Math.floor(p * n));
-  const inside = r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5;
+  const inside = filmInView;
   steps.forEach((s, i) => s.classList.toggle('is-on', inside && i === k));
   const ipadStep = RECORRIDO.findIndex((s) => s.ipad);
   const onIpad = inside && k === ipadStep;
