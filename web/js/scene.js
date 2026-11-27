@@ -33,9 +33,9 @@ const SHOTS = {
   contacto:      [[-320, 330, 400], [0, 30, 0]],
 };
 // Iglesia vecina: pegada al basamento por el sur (+z local), con el frente sobre la
-// misma línea de fachada del edificio (x = 22.6, mirando a la calle, +x local).
+// misma línea de fachada del basamento de ese lado (x = 10.7, mirando a la calle, +x local).
 // Coordenadas locales del sitio: queda alineada (derecha) con el edificio.
-const CHURCH = { x0: -14.5, x1: 22.6, z0: 27.4, z1: 50.4 };
+const CHURCH = { x0: -26.3, x1: 10.7, z0: 27.4, z1: 50.4 };
 // Visuales que no deben quedar tapadas por los edificios vecinos (ver clearSight)
 const SIGHT = ['hero', 'edificio', 'fachada-este', 'fachada-sur', 'fachada-oeste', 'fachada-norte', 'documentacion', 'arte', 'residencial', 'amenities']
   .map((k) => SHOTS[k]).filter(Boolean);
