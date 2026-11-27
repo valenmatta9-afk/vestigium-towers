@@ -26,11 +26,16 @@ function openFull(src, alt) {
 const galGroups = [{ id: 'exterior', name: 'Exterior', items: RENDERS.filter((r) => !r.floors.length) }];
 const seen = new Set();
 for (const f of FLOORS) {
-  const items = RENDERS.filter((r) => r.floors[0] === f.id && !seen.has(r));
-  if (!items.length) continue;
-  items.forEach((r) => seen.add(r));
+  const all = RENDERS.filter((r) => r.floors[0] === f.id && !seen.has(r));
+  if (!all.length) continue;
+  all.forEach((r) => seen.add(r));
+  const items = all.filter((r) => !r.group);
   const tipo = f.id.startsWith('p') && items.every((r) => r.floors.length > 1);
-  galGroups.push({ id: `g-${f.id}`, name: tipo ? 'Departamentos tipo' : f.name, items });
+  if (items.length) galGroups.push({ id: `g-${f.id}`, name: tipo ? 'Departamentos tipo' : f.name, items });
+  // subgrupos con nombre propio (por ejemplo, el exterior del café en planta baja)
+  for (const name of [...new Set(all.filter((r) => r.group).map((r) => r.group))]) {
+    galGroups.push({ id: `g-${f.id}-${name.length}`, name, items: all.filter((r) => r.group === name) });
+  }
 }
 $('#galNav').innerHTML = galGroups.map((g) => `<a href="#${g.id}">${esc(g.name)}</a>`).join('');
 $('#gal').innerHTML = galGroups.map((g) => `

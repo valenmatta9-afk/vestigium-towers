@@ -413,6 +413,57 @@ export function createScene(canvas, chapterIds, floorList = []) {
     }
     modelReady = true;
     onReady.splice(0).forEach((fn) => fn());
+    loadFurniture('assets/model/muebles.glb', { cx, cz, minX: all.min.x });
+  }
+
+  // Equipamiento (muebles, cuadros, objetos) tal como está en el modelo renderizado en D5.
+  // Los pisos tipo están amueblados una sola vez en el modelo: se repiten en todos los de su tipo.
+  async function loadFurniture(url, { cx, cz, minX }) {
+    const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    let gltf;
+    try { gltf = await loader.loadAsync(url); } catch { return; }
+    const root = gltf.scene;
+    root.updateMatrixWorld(true);
+    const place = new THREE.Matrix4().makeRotationY(FRONT_ROT).multiply(new THREE.Matrix4().makeTranslation(-cx, 0, -cz));
+    const mats = new Map();
+    const matFor = (src, fl) => {
+      const key = fl.def.id + '|' + src.uuid;
+      if (!mats.has(key)) {
+        const m = src.clone();
+        m.clippingPlanes = [...clipping, fl.cut];
+        m.clipShadows = true;
+        m.side = THREE.DoubleSide;
+        mats.set(key, m);
+      }
+      return mats.get(key);
+    };
+    const addTo = (fl, o, dy) => {
+      const mesh = new THREE.Mesh(o.geometry, matFor(o.material, fl));
+      mesh.matrixAutoUpdate = false;
+      mesh.matrix.copy(new THREE.Matrix4().makeTranslation(0, dy, 0).multiply(place).multiply(o.matrixWorld));
+      mesh.castShadow = mesh.receiveShadow = true;
+      mesh.userData.part = o.userData.part;
+      fl.group.add(mesh);
+    };
+    const box = new THREE.Box3(), c = new THREE.Vector3();
+    const meshes = [];
+    root.traverse((o) => { if (o.isMesh) meshes.push(o); });
+    let n = 0;
+    for (const o of meshes) {
+      box.setFromObject(o).getCenter(c);
+      const part = c.x >= minX + 16.5 && c.y >= 6 ? 'residencial' : 'amenities';
+      const fdef = floorList.find((f) => c.y >= f.y0 && c.y < f.y1 && (!f.part || f.part === part));
+      if (!fdef) continue;
+      o.userData.part = part;
+      addTo(floors.get(fdef.id), o, 0);
+      n++;
+      // Repetir en los demás pisos del mismo tipo
+      if (/^Planta tipo/.test(fdef.kind)) {
+        for (const g of floorList) if (g.kind === fdef.kind && g.id !== fdef.id) addTo(floors.get(g.id), o, g.y0 - fdef.y0);
+      }
+    }
+    console.info(`Equipamiento: ${n} piezas`);
   }
 
   // ───────────────────────── Marcadores provisorios ──────────────────────────

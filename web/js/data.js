@@ -97,11 +97,23 @@ export const FACHADAS = [
 ];
 
 // Renders de D5 (assets/renders/d5/). floors: ids de FLOORS donde se muestran al tocar ese piso.
-const D5 = (n) => `assets/renders/escena-${String(n).padStart(2, '0')}.jpg`;
+// Las escenas de GEMINI ya pasaron por Gemini (fotorrealistas, con gente): se usa esa versión.
+const GEMINI = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 40, 41]);
+const D5 = (n) => `assets/renders/${GEMINI.has(n) ? 'real/' : ''}escena-${String(n).padStart(2, '0')}.jpg`;
 const DEPTOS = ['p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p11', 'p12', 'p13', 'p14', 'p15'];
+const R = 'assets/renders/real/';
 export const RENDERS = [
   { src: 'assets/renders/hero-aerea.jpg', title: 'Vista aérea del conjunto en el centro de Mendoza', floors: [] },
+  // Renders pasados por Gemini antes (los primeros)
+  { src: R + 'parque.jpg', title: 'Parque elevado sobre el cowork', floors: ['parque'] },
+  { src: R + 'terraza.jpg', title: 'Terraza', floors: ['terraza'] },
+  { src: R + 'cowork.jpg', title: 'Cowork', floors: ['cowork'] },
+  { src: R + 'gimnasio.jpg', title: 'Gimnasio', floors: ['gimnasio'] },
+  { src: R + 'living.jpg', title: 'Departamento · living', floors: DEPTOS },
+  { src: R + 'comedor.jpg', title: 'Departamento · comedor', floors: DEPTOS },
   ...[
+    [18, 'Exterior del café · fogón', 'pb', 'Exterior del café'],
+    [19, 'Exterior del café · palmeras y reposeras', 'pb', 'Exterior del café'],
     [41, 'Lobby · el Pollock frente a los ascensores', 'pb'],
     [38, 'Lobby · acceso principal', 'pb'],
     [39, 'Lobby · recepción', 'pb'],
@@ -115,8 +127,6 @@ export const RENDERS = [
     [23, 'Parque elevado · mesas bajo el voladizo', 'parque'],
     [21, 'Parque elevado · espejos de agua', 'parque'],
     [22, 'Parque elevado', 'parque'],
-    [18, 'Parque elevado · fogón', 'parque'],
-    [19, 'Parque elevado · canteros', 'parque'],
     [33, 'El basamento visto desde arriba', 'parque'],
     [24, 'Cowork · puestos de trabajo', 'cowork'],
     [25, 'Cowork · estar', 'cowork'],
@@ -132,6 +142,10 @@ export const RENDERS = [
     [11, 'La quinta fachada vista desde la terraza', 'terraza'],
     [7, 'Penthouse Músico · estar con piano en doble altura', 'ph-musico'],
     [6, 'Penthouse Músico · sala de música', 'ph-musico'],
+    [1, 'Penthouse Astrólogo · observatorio con el telescopio', 'ph-astrologo'],
+    [2, 'Penthouse Astrólogo · estar con la esfera armilar', 'ph-astrologo'],
+    [3, 'Penthouse Astrólogo · estar hundido con el Monet', 'ph-astrologo'],
+    [4, 'Penthouse Astrólogo · comedor', 'ph-astrologo'],
     [8, 'Penthouse Astrólogo · estar hundido', 'ph-astrologo'],
     [5, 'Penthouse Astrólogo · escalera y biblioteca', 'ph-astrologo'],
     [12, 'Departamento · cocina y comedor', DEPTOS],
@@ -141,7 +155,7 @@ export const RENDERS = [
     [16, 'Departamento · comedor', DEPTOS],
     [17, 'Departamento · comedor con La última cena', DEPTOS],
     [20, 'Departamento · dormitorio', DEPTOS],
-  ].map(([n, title, f]) => ({ src: D5(n), title, floors: [].concat(f) })),
+  ].map(([n, title, f, group]) => ({ src: D5(n), title, floors: [].concat(f), group })),
 ];
 
 // Recorrido: cada paso ocupa una porción del video "assets/video/recorrido.mp4".
