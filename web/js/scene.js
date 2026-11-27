@@ -3,7 +3,7 @@
 // de SketchUp (GLB) se reemplazan en buildTowers() manteniendo los nombres.
 import * as THREE from '../vendor/three.module.js';
 import { RoomEnvironment } from '../vendor/RoomEnvironment.js';
-import { mergeGeometries } from '../vendor/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from '../vendor/BufferGeometryUtils.js';
 import { GLTFLoader } from '../vendor/GLTFLoader.js';
 import { MeshoptDecoder } from '../vendor/meshopt_decoder.module.js';
 
@@ -38,20 +38,21 @@ export function createScene(canvas, chapterIds, floorList = []) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.95;
+  renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.localClippingEnabled = true;
 
   const scene = new THREE.Scene();
-  const fogColor = new THREE.Color('#8c8780');
-  scene.fog = new THREE.Fog(fogColor, 260, 900);
+  // Bruma cálida de la tarde mendocina (como en la foto aérea)
+  const fogColor = new THREE.Color('#d3c3ab');
+  scene.fog = new THREE.Fog(fogColor, 240, 1250);
 
   const camera = new THREE.PerspectiveCamera(32, 1, 0.5, 3000);
 
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.environmentIntensity = 0.35;
+  scene.environmentIntensity = 0.45;
 
   // ── Cielo de atardecer ────────────────────────────────────
   const sky = new THREE.Mesh(
@@ -61,25 +62,26 @@ export function createScene(canvas, chapterIds, floorList = []) {
       depthWrite: false,
       fog: false,
       uniforms: {
-        top: { value: new THREE.Color('#33435c') },
-        mid: { value: new THREE.Color('#7d8490') },
-        hor: { value: new THREE.Color('#d6a47c') },
+        top: { value: new THREE.Color('#5d86b8') },
+        mid: { value: new THREE.Color('#a9c0d6') },
+        hor: { value: new THREE.Color('#ead2b0') },
       },
       vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
       fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 hor; varying vec3 vP;
         void main(){ float h = vP.y;
           vec3 c = mix(hor, mid, smoothstep(-0.02, 0.12, h));
           c = mix(c, top, smoothstep(0.12, 0.55, h));
-          gl_FragColor = vec4(c, 1.); }`,
+          gl_FragColor = vec4(pow(c, vec3(1.0 / 2.2)), 1.); }`, // a sRGB, como el resto de la escena
     })
   );
   scene.add(sky);
   scene.add(buildAndes());
 
   // ── Luces ─────────────────────────────────────────────────
-  scene.add(new THREE.HemisphereLight('#b9c3d3', '#4a3f35', 0.8));
-  const sun = new THREE.DirectionalLight('#ffd1a3', 3.4);
-  sun.position.set(-200, 110, 60);
+  scene.add(new THREE.HemisphereLight('#bfd2e8', '#8a7258', 0.95));
+  // Sol bajo de la tarde, desde el oeste (del lado de la cordillera)
+  const sun = new THREE.DirectionalLight('#ffc78e', 3.3);
+  sun.position.set(-210, 95, 110);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   Object.assign(sun.shadow.camera, { left: -130, right: 130, top: 170, bottom: -40, near: 10, far: 520 });
@@ -120,7 +122,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
   // ── Suelo y contexto urbano ───────────────────────────────
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(4000, 4000),
-    new THREE.MeshStandardMaterial({ color: '#262524', roughness: 1 })
+    new THREE.MeshStandardMaterial({ color: '#7d7365', roughness: 1 })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
@@ -418,6 +420,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
     modelReady = true;
     onReady.splice(0).forEach((fn) => fn());
     loadFurniture('assets/model/muebles.glb', { cx, cz, minX: all.min.x });
+    loadFurniture('assets/model/muebles2.glb', { cx, cz, minX: all.min.x }); // piezas pesadas (sillones, camas, sillas)
   }
 
   // Equipamiento (muebles, cuadros, objetos) tal como está en el modelo renderizado en D5.
@@ -520,69 +523,184 @@ export function createScene(canvas, chapterIds, floorList = []) {
       );
       scene.add(outline);
       const lot = new THREE.Mesh(flat(new THREE.ShapeGeometry(shape(p)), 0.06),
-        new THREE.MeshStandardMaterial({ color: '#3a3733', roughness: 1 }));
+        new THREE.MeshStandardMaterial({ color: '#968c7d', roughness: 1 }));
       lot.receiveShadow = true;
       scene.add(lot);
     }
 
-    // Calles
-    const roads = [];
-    for (const r of data.roads) {
+    // Calles: vereda de baldosa, acequia, calzada de asfalto y líneas de carril
+    const strip = (r, w, y, list, dash = 0) => {
       for (let i = 1; i < r.p.length; i++) {
         const [x1, z1] = r.p[i - 1], [x2, z2] = r.p[i];
         const L = Math.hypot(x2 - x1, z2 - z1);
         if (L < 0.1) continue;
-        const g = new THREE.PlaneGeometry(L + r.w * 0.5, r.w);
-        g.rotateX(-Math.PI / 2);
-        g.rotateY(-Math.atan2(z2 - z1, x2 - x1));
-        g.translate((x1 + x2) / 2, r.w > 6 ? 0.03 : 0.04, (z1 + z2) / 2);
-        roads.push(g);
+        const ang = -Math.atan2(z2 - z1, x2 - x1);
+        const n = dash ? Math.floor(L / dash) : 1;
+        for (let k = 0; k < n; k++) {
+          const len = dash ? dash * 0.45 : L + w * 0.5;
+          const t = dash ? (k + 0.5) / n : 0.5;
+          const g = new THREE.PlaneGeometry(len, w);
+          g.rotateX(-Math.PI / 2);
+          g.rotateY(ang);
+          g.translate(x1 + (x2 - x1) * t, y, z1 + (z2 - z1) * t);
+          list.push(g);
+        }
       }
+    };
+    const vereda = [], acequia = [], calzada = [], lineas = [];
+    for (const r of data.roads) {
+      const main = r.w > 6;
+      strip(r, r.w + (main ? 8 : 5), 0.02, vereda);
+      strip(r, r.w + 1.6, 0.03, acequia);
+      strip(r, r.w, 0.04, calzada);
+      if (main) strip(r, 0.18, 0.05, lineas, 6);
     }
-    const roadMesh = new THREE.Mesh(mergeGeometries(roads), new THREE.MeshStandardMaterial({ color: '#1c1c1d', roughness: 0.9 }));
-    roadMesh.receiveShadow = true;
-    scene.add(roadMesh);
+    for (const [list, color, rough] of [[vereda, '#b9ae9c', 0.95], [acequia, '#3a3129', 1], [calzada, '#4b4b4d', 0.85], [lineas, '#e9e4d6', 0.7]]) {
+      if (!list.length) continue;
+      const m = new THREE.Mesh(mergeGeometries(list), new THREE.MeshStandardMaterial({ color, roughness: rough }));
+      m.receiveShadow = true;
+      scene.add(m);
+    }
 
     // Plazas y verdes
     if (data.green.length) {
       const g = new THREE.Mesh(mergeGeometries(data.green.map((p) => flat(new THREE.ShapeGeometry(shape(p)), 0.05))),
-        new THREE.MeshStandardMaterial({ color: '#2c3524', roughness: 1 }));
+        new THREE.MeshStandardMaterial({ color: '#647d3d', roughness: 1 }));
       g.receiveShadow = true;
       scene.add(g);
     }
 
-    // Edificios (los de OSM con su altura; el resto completado)
-    const tex = concreteTex.clone();
-    tex.repeat.set(1 / 8, 1 / 8);
-    tex.needsUpdate = true;
-    const geos = { real: [], gen: [] };
-    for (const b of data.buildings) {
-      if (b.p.length < 3) continue;
-      const g = new THREE.ExtrudeGeometry(shape(b.p), { depth: b.h, bevelEnabled: false });
-      g.rotateX(-Math.PI / 2);
-      (b.gen ? geos.gen : geos.real).push(g.toNonIndexed ? g : g);
+    // Edificios del entorno: fachadas con ventanas, en los tonos de Mendoza
+    // (revoque crema, blanco, ladrillo, rosado) y techos planos.
+    buildCity(data.buildings);
+
+    // Arboleda: plátanos y moreras de las veredas, copas frondosas
+    buildTrees(data.trees);
+  }
+
+  function buildCity(list) {
+    const rnd = mulberry(11);
+    const tones = ['#efe6d4', '#e7dcc6', '#f3efe6', '#d9c7a8', '#cfa98a', '#b9775a', '#dcc3b4', '#c9c3b8', '#e8d7bd', '#a96d53'];
+    const roofTones = ['#c4bcae', '#d2cbbd', '#b5ad9f', '#cfc5b3', '#a9a194', '#bfa58c'];
+    const walls = [[], []]; // [ventanas sueltas, bandas vidriadas]
+    const roofs = [];
+    const c = new THREE.Color();
+    for (const b of list) {
+      const p = b.p;
+      if (p.length < 3) continue;
+      const pts = (p[0][0] === p[p.length - 1][0] && p[0][1] === p[p.length - 1][1]) ? p.slice(0, -1) : p;
+      if (pts.length < 3) continue;
+      let area = 0, cx = 0, cz = 0;
+      for (let i = 0; i < pts.length; i++) {
+        const [x1, z1] = pts[i], [x2, z2] = pts[(i + 1) % pts.length];
+        area += x1 * z2 - x2 * z1; cx += x1; cz += z1;
+      }
+      const sign = Math.sign(area) || 1;
+      const h = b.h;
+      const kind = h > 24 && rnd() < 0.35 ? 1 : 0;
+      c.set(tones[Math.floor(rnd() * tones.length)]);
+      const shade = 0.9 + rnd() * 0.12;
+      const col = [c.r * shade, c.g * shade, c.b * shade];
+      const W = walls[kind];
+      let u0 = rnd() * 8;
+      for (let i = 0; i < pts.length; i++) {
+        const [x1, z1] = pts[i], [x2, z2] = pts[(i + 1) % pts.length];
+        const L = Math.hypot(x2 - x1, z2 - z1);
+        if (L < 0.05) continue;
+        // normal hacia afuera según el sentido del polígono
+        const nx = (z2 - z1) / L * sign, nz = -(x2 - x1) / L * sign;
+        const u1 = u0 + L / 8, v1 = h / 3;
+        const A = [x1, 0, z1, u0, 0], B = [x2, 0, z2, u1, 0], C = [x2, h, z2, u1, v1], D = [x1, h, z1, u0, v1];
+        // orden de los vértices para que la cara mire hacia afuera
+        const tri = (a, b2, c2) => {
+          const e1 = [b2[0] - a[0], b2[1] - a[1], b2[2] - a[2]], e2 = [c2[0] - a[0], c2[1] - a[1], c2[2] - a[2]];
+          const fx = e1[1] * e2[2] - e1[2] * e2[1], fz = e1[0] * e2[1] - e1[1] * e2[0];
+          const order = fx * nx + fz * nz >= 0 ? [a, b2, c2] : [a, c2, b2];
+          for (const v of order) W.push(v[0], v[1], v[2], nx, 0, nz, v[3], v[4], col[0], col[1], col[2]);
+        };
+        tri(A, B, C); tri(A, C, D);
+        u0 = u1;
+      }
+      const rg = new THREE.ShapeGeometry((() => {
+        const sh = new THREE.Shape();
+        pts.forEach(([x, z], i) => (i ? sh.lineTo(x, -z) : sh.moveTo(x, -z)));
+        return sh;
+      })());
+      rg.rotateX(-Math.PI / 2);
+      rg.translate(0, h, 0);
+      c.set(roofTones[Math.floor(rnd() * roofTones.length)]);
+      const n = rg.attributes.position.count, rc = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) rc.set([c.r, c.g, c.b], i * 3);
+      rg.setAttribute('color', new THREE.BufferAttribute(rc, 3));
+      rg.deleteAttribute('uv');
+      roofs.push(rg);
     }
-    for (const [k, color] of [['real', '#8a8781'], ['gen', '#76746f']]) {
-      if (!geos[k].length) continue;
-      const m = new THREE.Mesh(mergeGeometries(geos[k]),
-        new THREE.MeshStandardMaterial({ color, map: tex, roughness: 0.95 }));
+    const facadeTex = [makeFacadeTexture(0), makeFacadeTexture(1)];
+    walls.forEach((arr, k) => {
+      if (!arr.length) return;
+      const f = new Float32Array(arr), g = new THREE.BufferGeometry();
+      const ib = new THREE.InterleavedBuffer(f, 11);
+      g.setAttribute('position', new THREE.InterleavedBufferAttribute(ib, 3, 0));
+      g.setAttribute('normal', new THREE.InterleavedBufferAttribute(ib, 3, 3));
+      g.setAttribute('uv', new THREE.InterleavedBufferAttribute(ib, 2, 6));
+      g.setAttribute('color', new THREE.InterleavedBufferAttribute(ib, 3, 8));
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+        map: facadeTex[k], vertexColors: true, roughness: 0.88, metalness: 0, envMapIntensity: 0.6,
+      }));
+      m.castShadow = m.receiveShadow = true;
+      scene.add(m);
+    });
+    if (roofs.length) {
+      const m = new THREE.Mesh(mergeGeometries(roofs), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
       m.castShadow = m.receiveShadow = true;
       scene.add(m);
     }
+  }
 
-    // Arboleda (forestales de las veredas mendocinas)
-    const trees = data.trees;
-    const crown = new THREE.IcosahedronGeometry(1, 0);
-    const im = new THREE.InstancedMesh(crown, new THREE.MeshStandardMaterial({ color: '#3b4a2c', roughness: 1, flatShading: true }), trees.length);
-    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), rnd = mulberry(4);
+  function buildTrees(trees) {
+    if (!trees?.length) return;
+    const rnd = mulberry(4);
+    // copa: esfera deformada con ruido para que no parezca un poliedro
+    let crown = new THREE.IcosahedronGeometry(1, 2);
+    crown.deleteAttribute('normal');
+    crown.deleteAttribute('uv');
+    crown = mergeVertices(crown); // vértices compartidos → sombreado suave
+    const pos = crown.attributes.position, v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      const k = 1 + 0.16 * Math.sin(v.x * 5.1 + v.y * 3.3) * Math.cos(v.z * 4.7 - v.y * 2.1) + 0.08 * Math.sin(v.x * 11 + v.z * 9);
+      v.multiplyScalar(k);
+      v.y *= 0.78;
+      pos.setXYZ(i, v.x, v.y, v.z);
+    }
+    crown.computeVertexNormals();
+    const trunk = new THREE.CylinderGeometry(0.18, 0.28, 1, 6);
+    trunk.translate(0, 0.5, 0);
+    const n = trees.length * 2;
+    const leaves = new THREE.InstancedMesh(crown, new THREE.MeshStandardMaterial({ roughness: 0.9, color: '#ffffff' }), n);
+    const trunks = new THREE.InstancedMesh(trunk, new THREE.MeshStandardMaterial({ color: '#5b4a3a', roughness: 1 }), trees.length);
+    const greens = ['#4f6d30', '#5e7c35', '#6c8a3c', '#476329', '#7a9442', '#5a7432'].map((s) => new THREE.Color(s));
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
+    let j = 0;
     trees.forEach(([x, z], i) => {
-      const s = 3 + rnd() * 2.2;
-      q.setFromEuler(new THREE.Euler(0, rnd() * 6, 0));
-      m4.compose(new THREE.Vector3(x, 4 + s * 0.6, z), q, new THREE.Vector3(s, s * 0.85, s));
-      im.setMatrixAt(i, m4);
+      const s = 3.2 + rnd() * 2.6, th = 3.2 + rnd() * 1.6;
+      m4.compose(new THREE.Vector3(x, 0, z), q.identity(), new THREE.Vector3(1, th + s * 0.3, 1));
+      trunks.setMatrixAt(i, m4);
+      for (let b = 0; b < 2; b++) {
+        const ox = b ? (rnd() - 0.5) * s * 0.9 : 0, oz = b ? (rnd() - 0.5) * s * 0.9 : 0;
+        const sb = b ? s * (0.6 + rnd() * 0.25) : s;
+        q.setFromEuler(new THREE.Euler(0, rnd() * 6.28, 0));
+        m4.compose(new THREE.Vector3(x + ox, th + s * 0.55 + (b ? s * 0.2 : 0), z + oz), q, new THREE.Vector3(sb, sb, sb));
+        leaves.setMatrixAt(j, m4);
+        col.copy(greens[Math.floor(rnd() * greens.length)]).multiplyScalar(0.85 + rnd() * 0.3);
+        leaves.setColorAt(j, col);
+        j++;
+      }
     });
-    im.castShadow = true;
-    scene.add(im);
+    leaves.castShadow = true;
+    leaves.receiveShadow = true;
+    trunks.castShadow = true;
+    scene.add(leaves, trunks);
   }
 
   // Lote: huella en el piso + aristas verticales tenues (no es el edificio).
@@ -608,32 +726,103 @@ export function createScene(canvas, chapterIds, floorList = []) {
 }
 
 
-// Cordillera de los Andes al oeste de Mendoza (silueta lejana, no a escala real)
+// Cordillera de los Andes al oeste de Mendoza: dos cordones (precordillera parda
+// y la cordillera alta, azulada por la distancia y con nieve), con bruma en la base.
 function buildAndes() {
-  const R = 1300, segs = 260, a0 = Math.PI * 0.62, a1 = Math.PI * 1.38; // de noroeste a suroeste
-  const pos = [], col = [], idx = [];
-  const base = new THREE.Color('#6d7486'), far = new THREE.Color('#8f93a0'), snow = new THREE.Color('#e4e2dc');
-  const ridge = (t) => {
-    let h = 0;
-    for (const [f, a, p] of [[3, 0.5, 1.3], [7, 0.28, 0.2], [17, 0.14, 2.1], [41, 0.06, 0.7], [97, 0.025, 1.9]]) h += a * (0.5 + 0.5 * Math.sin(t * f + p));
-    return h;
+  const group = new THREE.Group();
+  const haze = new THREE.Color('#d8c6ac');
+  const layer = ({ R, seed, base, peak, snowLine, hMin, hAmp, rock, snowCol, hazeMix, rows = 18 }) => {
+    const segs = 420, a0 = Math.PI * 0.6, a1 = Math.PI * 1.4;
+    const pos = [], col = [], idx = [];
+    const rr = mulberry(seed);
+    const ph = Array.from({ length: 8 }, () => rr() * 6.28);
+    const ridge = (t) => {
+      let h = 0;
+      // filos agudos (1-|sin|)^1.5, sumados a varias escalas, con poco detalle fino
+      [[3, 0.5], [7, 0.28], [16, 0.14], [37, 0.06], [83, 0.02]].forEach(([f, a], k) => {
+        h += a * Math.pow(1 - Math.abs(Math.sin(t * f + ph[k])), 1.5);
+      });
+      return h / 0.75;
+    };
+    const c = new THREE.Color();
+    for (let i = 0; i <= segs; i++) {
+      const t = i / segs, ang = a0 + (a1 - a0) * t;
+      const top = hMin + ridge(t * 6.283) * hAmp;
+      const x = Math.cos(ang) * R, z = -Math.sin(ang) * R * 0.92;
+      for (let r = 0; r <= rows; r++) {
+        const f = r / rows;                       // 0 base, 1 cumbre
+        const y = -20 + (top + 20) * f;
+        // ruido de laderas: quebradas y filos
+        const gully = 0.5 + 0.5 * Math.sin(t * 900 + f * 7 + ph[0]) * Math.sin(t * 310 - f * 5);
+        c.copy(rock).lerp(base, 1 - f).multiplyScalar(0.86 + 0.22 * gully);
+        if (y > snowLine + (gully - 0.5) * 18) c.copy(snowCol).multiplyScalar(0.9 + 0.12 * gully);
+        c.lerp(haze, hazeMix * (1 - f) * (1 - f) + hazeMix * 0.35);
+        pos.push(x * (1 - 0.02 * (1 - f)), y, z * (1 - 0.02 * (1 - f)));
+        col.push(c.r, c.g, c.b);
+        if (i < segs && r < rows) {
+          const k = i * (rows + 1) + r, k2 = k + rows + 1;
+          idx.push(k, k2, k + 1, k + 1, k2, k2 + 1);
+        }
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex(idx);
+    return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
   };
-  for (let i = 0; i <= segs; i++) {
-    const t = i / segs, ang = a0 + (a1 - a0) * t;
-    const h = 55 + ridge(t * 6.283) * 210;
-    const x = Math.cos(ang) * R, z = -Math.sin(ang) * R * 0.9;
-    pos.push(x, -10, z, x, h, z);
-    const c = base.clone().lerp(far, 0.35);
-    col.push(c.r, c.g, c.b);
-    const top = h > 185 ? snow : base;
-    col.push(top.r, top.g, top.b);
-    if (i < segs) { const k = i * 2; idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); }
+  group.add(layer({ R: 1460, seed: 7, base: new THREE.Color('#9aa0b4'), rock: new THREE.Color('#8790a8'),
+    snowCol: new THREE.Color('#f2f1ee'), snowLine: 150, hMin: 75, hAmp: 135, peak: 0, hazeMix: 0.5 }));
+  group.add(layer({ R: 1280, seed: 3, base: new THREE.Color('#a8957e'), rock: new THREE.Color('#8f7d6c'),
+    snowCol: new THREE.Color('#e9e4dc'), snowLine: 9999, hMin: 20, hAmp: 50, peak: 0, hazeMix: 0.6 }));
+  return group;
+}
+
+// Fachada genérica del entorno (blanca: el color de cada edificio va por vértice).
+// Una placa = 8 m de ancho × 3 m (un piso). kind 0: ventanas y balcones; kind 1: bandas vidriadas.
+function makeFacadeTexture(kind) {
+  const w = 256, h = 96;
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  const x = cv.getContext('2d');
+  const rnd = mulberry(20 + kind);
+  x.fillStyle = '#f4f1ea';
+  x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 500; i++) { // textura del revoque
+    x.fillStyle = `rgba(${rnd() < 0.5 ? '90,80,70' : '255,255,255'},${rnd() * 0.06})`;
+    x.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 3, 1 + rnd() * 3);
   }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  g.setIndex(idx);
-  return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, side: THREE.DoubleSide }));
+  const glass = (gx, gy, gw, gh) => {
+    const g = x.createLinearGradient(0, gy, 0, gy + gh);
+    g.addColorStop(0, '#5d6b78'); g.addColorStop(0.55, '#323b45'); g.addColorStop(1, '#3f4954');
+    x.fillStyle = g;
+    x.fillRect(gx, gy, gw, gh);
+    x.fillStyle = 'rgba(255,236,205,0.16)'; // reflejo del cielo de la tarde
+    x.fillRect(gx, gy, gw * 0.45, gh);
+  };
+  if (kind === 0) {
+    for (const ox of [18, 146]) {
+      glass(ox, 22, 92, 56);
+      x.fillStyle = 'rgba(40,36,32,0.55)'; // marco y parteluz
+      x.fillRect(ox - 3, 19, 98, 3); x.fillRect(ox + 45, 22, 3, 56);
+      x.fillStyle = 'rgba(60,54,48,0.35)'; // sombra del balcón
+      x.fillRect(ox - 8, 78, 108, 4);
+      x.fillStyle = 'rgba(30,28,26,0.5)'; // baranda
+      for (let b = ox - 6; b < ox + 100; b += 6) x.fillRect(b, 64, 1.5, 14);
+      x.fillRect(ox - 8, 63, 108, 2);
+    }
+  } else {
+    glass(0, 14, w, 64);
+    x.fillStyle = 'rgba(30,30,32,0.6)';
+    for (let m = 0; m < w; m += 32) x.fillRect(m, 14, 2, 64);
+  }
+  x.fillStyle = 'rgba(70,62,54,0.28)'; // línea de losa
+  x.fillRect(0, h - 6, w, 6);
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
 }
 
 function mesh(geo, mat) {
