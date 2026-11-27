@@ -98,16 +98,29 @@ export const FACHADAS = [
 
 // Renders de D5 (assets/renders/d5/). floors: ids de FLOORS donde se muestran al tocar ese piso.
 // Las escenas de GEMINI ya pasaron por Gemini (fotorrealistas, con gente): se usa esa versión.
-const GEMINI = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 40, 41]);
+const GEMINI = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]);
 const D5 = (n) => `assets/renders/${GEMINI.has(n) ? 'real/' : ''}escena-${String(n).padStart(2, '0')}.jpg`;
 const DEPTOS = ['p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p11', 'p12', 'p13', 'p14', 'p15'];
 const R = 'assets/renders/real/';
 export const RENDERS = [
   { src: 'assets/renders/hero-aerea.jpg', title: 'Vista aérea del conjunto en el centro de Mendoza', floors: [] },
-  { src: 'assets/renders/exterior-01.jpg', title: 'El conjunto completo, vista aérea', floors: [] },
-  { src: 'assets/renders/exterior-02.jpg', title: 'El basamento y la torre desde la calle', floors: [] },
-  { src: 'assets/renders/exterior-03.jpg', title: 'El corrimiento de la torre', floors: [] },
-  { src: 'assets/renders/exterior-04.jpg', title: 'La torre y el voladizo sobre la terraza', floors: [] },
+  ...[
+    [1, 'La torre en Mendoza, con la cordillera de fondo'],
+    [2, 'El conjunto y la iglesia vecina'],
+    [3, 'La torre sobre la avenida arbolada'],
+    [4, 'Vista aérea hacia los Andes'],
+    [5, 'El basamento desde la vereda'],
+    [6, 'El basamento y la torre desde la esquina'],
+    [7, 'La torre desde la calle'],
+    [8, 'El voladizo visto desde abajo'],
+    [9, 'Terraza común bajo el voladizo', 'terraza'],
+    [10, 'Las fachadas sobre la calle'],
+    [11, 'La torre apoyada sobre el basamento'],
+    [12, 'El jardín bajo la torre'],
+    [13, 'El basamento desde el jardín'],
+    [14, 'El patio del café al atardecer', 'pb'],
+    [15, 'El exterior del café', 'pb'],
+  ].map(([n, title, f]) => ({ src: `${'assets/renders/real/'}exterior-${String(n).padStart(2, '0')}.jpg`, title, floors: f ? [f] : [] })),
   // Renders pasados por Gemini antes (los primeros)
   { src: R + 'parque.jpg', title: 'Parque elevado sobre el cowork', floors: ['parque'] },
   { src: R + 'terraza.jpg', title: 'Terraza', floors: ['terraza'] },
