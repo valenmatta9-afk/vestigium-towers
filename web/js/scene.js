@@ -219,7 +219,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
       c.y = fl.def.y0 + 1;
       site.localToWorld(c);
       const size = fl.box.getSize(new THREE.Vector3());
-      const d = Math.max(size.x, size.z) * 1.7 + 16;
+      const d = Math.max(size.x, size.z) * 1.3 + 10;
       const ref = SHOTS.edificio;
       const dir = new THREE.Vector3(ref[0][0] - ref[1][0], 0, ref[0][2] - ref[1][2]).normalize();
       // corre el encuadre para que el piso quede a la derecha del texto (en celular, centrado)
@@ -438,32 +438,49 @@ export function createScene(canvas, chapterIds, floorList = []) {
       }
       return mats.get(key);
     };
-    const addTo = (fl, o, dy) => {
-      const mesh = new THREE.Mesh(o.geometry, matFor(o.material, fl));
-      mesh.matrixAutoUpdate = false;
-      mesh.matrix.copy(new THREE.Matrix4().makeTranslation(0, dy, 0).multiply(place).multiply(o.matrixWorld));
-      mesh.castShadow = mesh.receiveShadow = true;
-      mesh.userData.part = o.userData.part;
-      fl.group.add(mesh);
+    // El GLB viene unido por material: se reparte triángulo por triángulo en cada piso (por la altura)
+    // y se arma una malla por piso y material. Los pisos tipo se copian a todos los de su tipo.
+    const buckets = new Map(); // floorId|matUuid → { fl, mat, pos: [], nor: [] }
+    const bucket = (fl, src) => {
+      const key = fl.def.id + '|' + src.uuid;
+      if (!buckets.has(key)) buckets.set(key, { fl, mat: matFor(src, fl), pos: [], nor: [] });
+      return buckets.get(key);
     };
-    const box = new THREE.Box3(), c = new THREE.Vector3();
     const meshes = [];
     root.traverse((o) => { if (o.isMesh) meshes.push(o); });
-    let n = 0;
+    let tris = 0;
     for (const o of meshes) {
-      box.setFromObject(o).getCenter(c);
-      const part = c.x >= minX + 16.5 && c.y >= 6 ? 'residencial' : 'amenities';
-      const fdef = floorList.find((f) => c.y >= f.y0 && c.y < f.y1 && (!f.part || f.part === part));
-      if (!fdef) continue;
-      o.userData.part = part;
-      addTo(floors.get(fdef.id), o, 0);
-      n++;
-      // Repetir en los demás pisos del mismo tipo
-      if (/^Planta tipo/.test(fdef.kind)) {
-        for (const g of floorList) if (g.kind === fdef.kind && g.id !== fdef.id) addTo(floors.get(g.id), o, g.y0 - fdef.y0);
+      let g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+      g.applyMatrix4(o.matrixWorld);
+      if (!g.attributes.normal) g.computeVertexNormals();
+      const P = g.attributes.position.array, N = g.attributes.normal.array;
+      for (let i = 0; i < P.length; i += 9) {
+        const cx = (P[i] + P[i + 3] + P[i + 6]) / 3, cy = (P[i + 1] + P[i + 4] + P[i + 7]) / 3;
+        const part = cx >= minX + 16.5 && cy >= 6 ? 'residencial' : 'amenities';
+        const fdef = floorList.find((f) => cy >= f.y0 && cy < f.y1 && (!f.part || f.part === part));
+        if (!fdef) continue;
+        const targets = /^Planta tipo/.test(fdef.kind) ? floorList.filter((f) => f.kind === fdef.kind) : [fdef];
+        for (const t of targets) {
+          const b = bucket(floors.get(t.id), o.material), dy = t.y0 - fdef.y0;
+          for (let k = 0; k < 9; k += 3) {
+            b.pos.push(P[i + k], P[i + k + 1] + dy, P[i + k + 2]);
+            b.nor.push(N[i + k], N[i + k + 1], N[i + k + 2]);
+          }
+        }
+        tris++;
       }
     }
-    console.info(`Equipamiento: ${n} piezas`);
+    for (const { fl, mat, pos, nor } of buckets.values()) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+      geo.applyMatrix4(place);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = mesh.receiveShadow = true;
+      fl.group.add(mesh);
+      fl.furnished = true;
+    }
+    console.info(`Equipamiento: ${tris} triángulos en ${buckets.size} mallas`);
   }
 
   // ───────────────────────── Marcadores provisorios ──────────────────────────
