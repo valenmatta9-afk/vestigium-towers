@@ -32,6 +32,12 @@ const SHOTS = {
   arte:          [[90, 45, 130], [0, 10, 0]],
   contacto:      [[-320, 330, 400], [0, 30, 0]],
 };
+// Iglesia vecina: pegada al basamento por el sur (+z), con el frente sobre la misma
+// línea de edificación de la calle (este, +x). Huella en coordenadas del mundo.
+const CHURCH = { x0: -6, x1: 31.5, z0: 33, z1: 56 };
+// Visuales que no deben quedar tapadas por los edificios vecinos (ver clearSight)
+const SIGHT = ['hero', 'edificio', 'fachada-este', 'fachada-sur', 'fachada-oeste', 'fachada-norte', 'documentacion', 'arte', 'residencial', 'amenities']
+  .map((k) => SHOTS[k]).filter(Boolean);
 
 export function createScene(canvas, chapterIds, floorList = []) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -164,6 +170,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
   hoverBox.visible = false;
   site.add(hoverBox);
   let selFloor = null, hoverFloor = null, modelReady = false;
+  const glassMats = []; // [id de piso | null, material] de los vidrios de fachada
   let floorZoom = 1, floorOrbit = 0; // acercar/alejar y girar alrededor del piso elegido
   const onReady = [];
   loadModel('assets/model/vestigium.glb');
@@ -324,7 +331,11 @@ export function createScene(canvas, chapterIds, floorList = []) {
       hoverFloor = id;
       return id;
     },
-    setFloor(id) { selFloor = id && floors.has(id) ? id : null; floorZoom = 1; floorOrbit = 0; },
+    setFloor(id) {
+      selFloor = id && floors.has(id) ? id : null; floorZoom = 1; floorOrbit = 0;
+      // el piso abierto deja ver adentro: su vidrio se vuelve casi transparente
+      for (const [fid, m] of glassMats) m.opacity = selFloor && fid === selFloor ? m.userData.glass.open : m.userData.glass.base;
+    },
     zoomFloor(f) { floorZoom = Math.min(1.8, Math.max(0.22, floorZoom * f)); },
     orbitFloor(a) { floorOrbit += a; },
     // Caja del piso en coordenadas del mundo (para encuadres)
@@ -381,6 +392,19 @@ export function createScene(canvas, chapterIds, floorList = []) {
         m.emissive = new THREE.Color('#c25a70');
         m.emissiveIntensity = 0;
         if (!m.transparent) { m.roughness = 0.9; m.metalness = 0; }
+        // Vidrios de fachada: en el modelo están casi invisibles (7 %) y el edificio
+        // parecía vacío. Pasan a vidrio real, levemente azulado y con reflejo, como en D5.
+        // En el piso abierto a 45° vuelven a ser transparentes para ver el equipamiento.
+        if (m.transparent && /szyba|glass|cristal|vidrio/i.test(src.name) && !/cadena|pool|water/i.test(src.name) && m.opacity < 0.45) {
+          m.color.set('#7f98a8');
+          m.opacity = 0.52;
+          m.roughness = 0.06;
+          m.metalness = 0.35;
+          m.envMapIntensity = 1.4;
+          m.depthWrite = false;
+          m.userData.glass = { base: 0.52, open: 0.1 };
+          glassMats.push([fl ? fdef.id : null, m]);
+        }
         // Hormigón visto: los materiales opacos grises o blancos del modelo pasan
         // a hormigón con marcas de encofrado; maderas, metales oscuros y vidrios quedan igual.
         const hsl = {};
@@ -575,7 +599,128 @@ export function createScene(canvas, chapterIds, floorList = []) {
     buildCity(data.buildings);
 
     // Arboleda: plátanos y moreras de las veredas, copas frondosas
-    buildTrees(data.trees);
+    buildTrees(data.trees.filter(([x, z]) => !(x > CHURCH.x0 && x < CHURCH.x1 && z > CHURCH.z0 && z < CHURCH.z1)));
+
+    // La iglesia vecina, al lado del edificio
+    buildChurch();
+  }
+
+  // Iglesia de fachada colonial rosada (como en los renders de D5): dos campanarios con
+  // linterna, frontis con frontón y portal en arco, nave con techo de tejas a dos aguas
+  // y cúpula sobre el crucero. El frente mira a la calle (+x).
+  function buildChurch() {
+    const { x0, x1, z0, z1 } = CHURCH;
+    const W = z1 - z0, zc = (z0 + z1) / 2;
+    const g = new THREE.Group();
+    const M = (color, rough = 0.85, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: rough, ...extra });
+    const pink = M('#dc9a94'), pinkDark = M('#c9837d'), trim = M('#f1e8db', 0.7), tile = M('#9b5a43', 0.9),
+      dark = M('#2f2826', 0.5), wood = M('#5a3b2a', 0.7), dome = M('#b8b2a6', 0.55, { metalness: 0.15 }), bronze = M('#6d5a3c', 0.4, { metalness: 0.8 });
+    const add = (geo, mat, x, y, z, ry = 0) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z); m.rotation.y = ry;
+      m.castShadow = m.receiveShadow = true;
+      g.add(m);
+      return m;
+    };
+    const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+    const fx = x1; // plano de fachada
+    const naveH = 13, towerW = 5.2, towerH = 21;
+    // Nave
+    add(B(x1 - x0 - 2, naveH, W - 2 * towerW + 2), pink, (x0 + x1) / 2 - 1, naveH / 2, zc);
+    // Naves laterales (más bajas)
+    for (const s of [-1, 1]) add(B(x1 - x0 - 8, 8, towerW), pinkDark, (x0 + x1) / 2 - 4, 4, zc + s * (W / 2 - towerW / 2));
+    // Techo de tejas a dos aguas sobre la nave
+    const roofW = W - 2 * towerW + 3, roofL = x1 - x0 - 4;
+    const roofShape = new THREE.Shape([new THREE.Vector2(-roofW / 2, 0), new THREE.Vector2(roofW / 2, 0), new THREE.Vector2(0, 4.2)]);
+    const roof = new THREE.ExtrudeGeometry(roofShape, { depth: roofL, bevelEnabled: false });
+    roof.rotateY(Math.PI / 2);
+    add(roof, tile, x0 + 1, naveH, zc);
+    // Techos de las naves laterales (un agua)
+    for (const s of [-1, 1]) {
+      const r = add(B(x1 - x0 - 8, 0.4, towerW + 0.8), tile, (x0 + x1) / 2 - 4, 8.6, zc + s * (W / 2 - towerW / 2));
+      r.rotation.x = s * 0.28;
+    }
+    // Frontis central con frontón
+    const frontW = W - 2 * towerW;
+    add(B(1.2, naveH + 1, frontW), pink, fx - 0.6, (naveH + 1) / 2, zc);
+    const ped = new THREE.Shape([new THREE.Vector2(-frontW / 2 - 0.4, 0), new THREE.Vector2(frontW / 2 + 0.4, 0), new THREE.Vector2(0, 4.6)]);
+    const pedG = new THREE.ExtrudeGeometry(ped, { depth: 1.4, bevelEnabled: false });
+    pedG.rotateY(Math.PI / 2);
+    add(pedG, trim, fx - 1.4, naveH + 1, zc);
+    add(B(1.0, 0.5, frontW + 1.2), trim, fx - 0.2, naveH + 0.9, zc); // cornisa
+    add(B(0.6, 0.35, W + 0.4), trim, fx, 6.6, zc);                    // imposta
+    add(B(0.6, 0.8, W + 0.6), trim, fx, 0.4, zc);                     // zócalo
+    // Pilastras
+    for (const k of [-1, -0.33, 0.33, 1]) add(B(0.5, naveH, 0.8), trim, fx + 0.1, naveH / 2, zc + k * (frontW / 2 - 0.4));
+    // Portal en arco
+    const arch = (w, h, x, y, z, mat) => {
+      const sh = new THREE.Shape();
+      sh.moveTo(-w / 2, 0); sh.lineTo(-w / 2, h - w / 2); sh.absarc(0, h - w / 2, w / 2, Math.PI, 0, true); sh.lineTo(w / 2, 0); sh.lineTo(-w / 2, 0);
+      const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.3, bevelEnabled: false });
+      geo.rotateY(Math.PI / 2);
+      return add(geo, mat, x, y, z);
+    };
+    arch(4.6, 6.4, fx + 0.05, 0, zc, trim);
+    arch(3.8, 5.8, fx + 0.12, 0, zc, wood);
+    // Ventanas en arco del frontis y de los campanarios
+    for (const k of [-1, 1]) arch(1.6, 3.2, fx + 0.12, 8, zc + k * frontW * 0.3, dark);
+    arch(2.2, 3.4, fx + 0.12, 8.2, zc, dark); // óculo/ventana central
+    // Campanarios
+    for (const s of [-1, 1]) {
+      const tz = zc + s * (W / 2 - towerW / 2);
+      add(B(towerW, towerH, towerW), pink, fx - towerW / 2 + 0.3, towerH / 2, tz);
+      for (const y of [6.6, 13.6, towerH]) add(B(towerW + 0.5, 0.45, towerW + 0.5), trim, fx - towerW / 2 + 0.3, y, tz);
+      arch(1.4, 3, fx + 0.36, 2.2, tz, dark);
+      arch(1.3, 2.8, fx + 0.36, 9, tz, dark);
+      // Cuerpo de campanas con arcos en las cuatro caras
+      const bx = fx - towerW / 2 + 0.3, by = towerH + 0.2;
+      add(B(towerW - 0.8, 4.6, towerW - 0.8), pinkDark, bx, by + 2.3, tz);
+      for (const [dx, dz, ry] of [[1, 0, 0], [-1, 0, Math.PI], [0, 1, -Math.PI / 2], [0, -1, Math.PI / 2]]) {
+        const a = arch(1.6, 3.4, bx + dx * (towerW / 2 - 0.35), by + 0.4, tz + dz * (towerW / 2 - 0.35), dark);
+        a.rotation.y = ry;
+      }
+      add(B(towerW - 0.2, 0.4, towerW - 0.2), trim, bx, by + 4.8, tz);
+      // Linterna con cupulín y cruz
+      add(new THREE.CylinderGeometry(1.4, 1.7, 2.2, 12), pink, bx, by + 6.1, tz);
+      add(new THREE.SphereGeometry(1.5, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), dome, bx, by + 7.2, tz);
+      add(B(0.12, 1.6, 0.12), bronze, bx, by + 9.4, tz);
+      add(B(0.12, 0.12, 0.9), bronze, bx, by + 9.7, tz);
+    }
+    // Cúpula sobre el crucero
+    const dx = x0 + (x1 - x0) * 0.3;
+    add(new THREE.CylinderGeometry(4.6, 4.8, 5, 24), pink, dx, naveH + 2.5, zc);
+    add(new THREE.CylinderGeometry(4.9, 4.9, 0.4, 24), trim, dx, naveH + 5.1, zc);
+    for (let i = 0; i < 8; i++) { // ventanas del tambor
+      const a = (i / 8) * Math.PI * 2;
+      const w = arch(1, 2.4, dx + Math.cos(a) * 4.75, naveH + 1.2, zc + Math.sin(a) * 4.75, dark);
+      w.rotation.y = -a;
+    }
+    add(new THREE.SphereGeometry(4.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), dome, dx, naveH + 5.3, zc);
+    add(new THREE.CylinderGeometry(0.8, 1, 2, 12), trim, dx, naveH + 10.8, zc);
+    add(new THREE.SphereGeometry(0.9, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), dome, dx, naveH + 11.8, zc);
+    add(B(0.14, 2, 0.14), bronze, dx, naveH + 13.6, zc);
+    add(B(0.14, 0.14, 1.1), bronze, dx, naveH + 14, zc);
+    // Atrio de baldosas frente a la iglesia
+    add(B(4, 0.12, W), M('#c9bba6', 0.95), fx + 2, 0.06, zc);
+    scene.add(g);
+  }
+
+  // Los edificios vecinos que quedan entre una cámara de capítulo y la torre se
+  // bajan hasta quedar por debajo de la visual a la base del edificio: así las
+  // fachadas se ven enteras sin vaciar la ciudad.
+  function clearSight(x, z, rad, h) {
+    let out = h;
+    for (const [[px, py, pz], [tx, , tz]] of SIGHT) {
+      const dx = tx - px, dz = tz - pz, L2 = dx * dx + dz * dz;
+      const t = ((x - px) * dx + (z - pz) * dz) / L2;
+      if (t <= 0.02 || t >= 0.97) continue;
+      const d = Math.abs((x - px) * dz - (z - pz) * dx) / Math.sqrt(L2);
+      if (d > 24 + rad) continue;
+      // visual a la planta baja de la torre; cerca de la cámara, más bajos todavía
+      const lineY = py * (1 - t) - 3 - 14 * (1 - t);
+      out = Math.min(out, Math.max(4, lineY));
+    }
+    return out;
   }
 
   function buildCity(list) {
@@ -596,7 +741,12 @@ export function createScene(canvas, chapterIds, floorList = []) {
         area += x1 * z2 - x2 * z1; cx += x1; cz += z1;
       }
       const sign = Math.sign(area) || 1;
-      const h = b.h;
+      cx /= pts.length; cz /= pts.length;
+      // el lugar de la iglesia queda libre (la iglesia se modela aparte)
+      if (cx > CHURCH.x0 - 3 && cx < CHURCH.x1 + 3 && cz > CHURCH.z0 - 3 && cz < CHURCH.z1 + 3) continue;
+      let rad = 0;
+      for (const [x, z] of pts) rad = Math.max(rad, Math.hypot(x - cx, z - cz));
+      const h = clearSight(cx, cz, rad, b.h);
       const kind = h > 24 && rnd() < 0.35 ? 1 : 0;
       c.set(tones[Math.floor(rnd() * tones.length)]);
       const shade = 0.9 + rnd() * 0.12;
