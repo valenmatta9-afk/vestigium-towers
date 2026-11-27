@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="assets/renders/hero-aerea.jpg" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body data-chapter="hero">
@@ -18,20 +19,17 @@
   </div>
 
   <canvas id="gl" aria-hidden="true"></canvas>
-  <div class="photo" id="photo" aria-hidden="true"></div>
   <div class="veil" aria-hidden="true"></div>
 
   <header class="top">
     <a class="brand" href="#hero">Vestigium</a>
     <nav class="nav" aria-label="Secciones">
-      <a href="#conjunto">Conjunto</a>
-      <a href="#amenities">Amenities</a>
-      <a href="#residencial">Residencial</a>
+      <a href="#edificio">Edificio</a>
+      <a href="#renders">Renders</a>
       <a href="#recorrido">Recorrido</a>
       <a href="#documentacion">Planos</a>
       <a href="#quinta">Quinta fachada</a>
       <a href="#arte">Arte</a>
-      <a href="estilo-b.html">Diseño B</a>
     </nav>
   </header>
 
@@ -45,82 +43,46 @@
   <main>
     <section class="ch ch--hero" id="hero" data-chapter="hero" data-label="Inicio">
       <div class="hero">
-        <h1 class="cast" aria-label="Vestigium Towers">Vestigium</h1>
-        <p class="hero__sub">Una torre de hormigón visto sobre un estacionamiento del centro de Mendoza.</p>
-      </div>
-      <p class="hero__scroll">Bajá para recorrer el proyecto</p>
-    </section>
-
-    <section class="ch" id="conjunto" data-chapter="conjunto" data-label="Conjunto">
-      <article class="copy">
-        <h2>Vestigium: la huella</h2>
-        <p id="introText"></p>
-        <div class="pick">
-          <button class="pick__btn" data-goto="amenities"><span>Basamento</span>Amenities</button>
-          <button class="pick__btn" data-goto="residencial"><span>Torre</span>Residencial</button>
+        <img class="hero__img" src="assets/renders/hero-aerea.jpg" alt="Vista aérea de Vestigium Towers en el centro de Mendoza, con la cordillera de fondo" width="1264" height="848" />
+        <div class="hero__text">
+          <h1 class="cast" aria-label="Vestigium Towers">Vestigium</h1>
+          <p class="hero__sub">Una torre de hormigón visto sobre un estacionamiento del centro de Mendoza.</p>
         </div>
-        <p class="hint">También podés elegir cada parte tocándola en la maqueta.</p>
-      </article>
+      </div>
+      <p class="hero__scroll">Bajá para recorrer el edificio</p>
     </section>
 
-    <section class="ch ch--tall" id="amenities" data-chapter="amenities" data-label="Amenities">
-      <article class="copy">
-        <h2 id="taTitle"></h2>
-        <p id="taText"></p>
-        <ul class="list" id="amenityList"></ul>
-      </article>
-    </section>
-
-    <section class="ch" id="residencial" data-chapter="residencial" data-label="Residencial">
-      <article class="copy">
-        <h2 id="tbTitle"></h2>
-        <p id="tbText"></p>
-        <dl class="units" id="unitList"></dl>
-      </article>
-    </section>
-
-    <section class="ch" id="planta" data-chapter="planta" data-label="Planta tipo">
-      <article class="copy">
-        <h2>Planta tipo</h2>
-        <p>Acá la torre se abre y deja ver un departamento amueblado en corte isométrico. Se arma con el modelo final de SketchUp.</p>
+    <section class="ch ch--floors" id="edificio" data-chapter="edificio" data-label="Edificio">
+      <article class="copy floors">
+        <h2>El edificio, piso por piso</h2>
+        <p id="introText"></p>
+        <p class="hint">Tocá un piso en la maqueta o elegilo de la lista: se abre y lo ves a 45°.</p>
+        <div class="floors__list" id="floorList"></div>
+        <div class="floor" id="floorCard" hidden>
+          <p class="floor__kind" id="floorKind"></p>
+          <h3 id="floorName"></h3>
+          <p id="floorText"></p>
+          <div class="floor__media" id="floorMedia"></div>
+          <div class="floor__actions">
+            <button class="cta cta--small" id="floorPlan">Ver la planta</button>
+            <button class="cta cta--small" id="floorClose">Ver todo el edificio</button>
+          </div>
+        </div>
       </article>
     </section>
 
     <section class="ch ch--tall" id="renders" data-chapter="renders" data-label="Renders">
       <article class="copy copy--wide">
         <h2>Renders</h2>
-        <p>Vistas aéreas del conjunto, las tipologías de departamentos, el parque elevado y el lobby. Tocá una imagen para verla grande.</p>
+        <p>Interiores y exteriores renderizados en D5. Tocá una imagen para verla grande.</p>
         <div class="gal" id="gal"></div>
       </article>
     </section>
-    <style>
-      .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:1.5rem}
-      .gal figure{margin:0;background:#3A3631;cursor:zoom-in}
-      .gal img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
-      .gal figcaption{font-size:.85rem;padding:.4rem .6rem;color:#DCD9D2}
-      .gal-full{position:fixed;inset:0;z-index:99;background:rgba(20,18,16,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
-      .gal-full img{max-width:94vw;max-height:90vh}
-    </style>
-    <script>
-      (() => {
-        const R = [['R01','Aérea del conjunto, suroeste'],['R02','Aérea del conjunto, noreste'],['R03','Aérea desde el frente'],['R04','Vereda y acceso'],
-          ['R05','Tipología · planta tipo 1'],['R06','Tipología · planta tipo 2'],['R07','Tipología · dúplex'],['R08','Departamento piso 1'],['R09','Departamento piso 1, B'],
-          ['R10','Parque elevado, aérea'],['R11','Parque elevado'],['R12','Lobby'],['R13','Lobby, recepción'],['R14','Café']];
-        const g = document.getElementById('gal');
-        for (const [f, t] of R) {
-          const fig = document.createElement('figure');
-          fig.innerHTML = `<img src="assets/renders/${f}.jpg" alt="${t}" loading="lazy"><figcaption>${t}</figcaption>`;
-          fig.querySelector('img').onerror = () => fig.remove();
-          fig.onclick = () => { const d = document.createElement('div'); d.className = 'gal-full'; d.innerHTML = `<img src="assets/renders/${f}.jpg" alt="${t}">`; d.onclick = () => d.remove(); document.body.appendChild(d); };
-          g.appendChild(fig);
-        }
-      })();
-    </script>
 
     <section class="ch ch--film" id="recorrido" data-chapter="recorrido" data-label="Recorrido">
       <div class="film">
         <video class="film__video" id="filmVideo" muted playsinline preload="auto" src="assets/video/recorrido.mp4"></video>
-        <div class="film__fallback" id="filmFallback"><p>El video del recorrido se suma cuando esté el render de D5.</p></div>
+        <div class="film__fallback" id="filmFallback"><p>Acá va el video del recorrido: del lobby, por el ascensor, hasta el departamento.</p></div>
         <ol class="film__steps" id="filmSteps"></ol>
         <div class="ipad" id="ipad" aria-hidden="true">
           <div class="ipad__screen">
@@ -187,17 +149,6 @@
         </figure>
       </article>
     </section>
-    <style>
-      .qf__lead { font-size: 1.1em; }
-      .qf__pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin: 1.5rem 0; }
-      .qf figure { margin: 0; }
-      .qf figure img { display: block; width: 100%; height: auto; aspect-ratio: 630 / 615; object-fit: cover; }
-      .qf figcaption { font-size: .9em; line-height: 1.45; margin-top: .5rem; opacity: .85; }
-      .qf__h { font-family: 'Big Shoulders Display', sans-serif; font-size: 1.6rem; margin: 1.6rem 0 .6rem; }
-      .qf__steps { padding-left: 1.3rem; display: grid; gap: .7rem; margin: 0 0 1.2rem; }
-      .qf__plan { margin-top: 1.5rem !important; }
-      .qf__plan img { aspect-ratio: 2583 / 1825 !important; background: #e4e1dc; }
-    </style>
 
     <section class="ch ch--tall" id="arte" data-chapter="arte" data-label="Arte">
       <article class="copy copy--wide">
@@ -218,57 +169,6 @@
     </section>
   </main>
 
-  <script>
-    // Fondos realistas con zoom: en cada seccion, al bajar, la camara se acerca a un punto
-    // de la imagen (fx, fy en 0..1) y entra al espacio siguiente. Para usar renders de D5,
-    // reemplaza las rutas (por ejemplo 'assets/renders/d5/lobby.jpg'). Sin lista = modelo 3D.
-    const R = 'assets/renders/real/';
-    const SECUENCIAS = {
-      hero:        [{ src: R + 'parque.jpg', fx: .5, fy: .5 }],
-      conjunto:    [{ src: R + 'parque.jpg', fx: .62, fy: .45 }, { src: R + 'terraza.jpg', fx: .5, fy: .5 }],
-      amenities:   [{ src: R + 'parque.jpg', fx: .45, fy: .78 }, { src: R + 'cowork.jpg', fx: .55, fy: .45 }, { src: R + 'gimnasio.jpg', fx: .5, fy: .5 }],
-      residencial: [{ src: R + 'terraza.jpg', fx: .62, fy: .3 }, { src: R + 'living.jpg', fx: .45, fy: .55 }, { src: R + 'comedor.jpg', fx: .5, fy: .5 }],
-      renders:     [{ src: R + 'terraza.jpg', fx: .5, fy: .5 }],
-      quinta:      [{ src: 'assets/arte/quinta-fachada.jpg', fx: .5, fy: .5 }, { src: 'assets/arte/inspiracion-quinta-fachada.jpg', fx: .7, fy: .4 }],
-      arte:        [{ src: R + 'comedor.jpg', fx: .5, fy: .5 }],
-      contacto:    [{ src: R + 'terraza.jpg', fx: .5, fy: .5 }],
-    };
-    (() => {
-      const box = document.getElementById('photo');
-      const els = {};
-      Object.entries(SECUENCIAS).forEach(([ch, list]) => {
-        els[ch] = list.map((f) => { const im = new Image(); im.src = f.src; im.alt = ''; im.decoding = 'async'; box.appendChild(im); return im; });
-      });
-      const ease = (t) => t * t * (3 - 2 * t);
-      let raf = 0;
-      const paint = () => {
-        raf = 0;
-        const ch = document.body.dataset.chapter;
-        const list = SECUENCIAS[ch];
-        document.body.classList.toggle('has-photo', !!list);
-        Object.entries(els).forEach(([k, arr]) => { if (k !== ch) arr.forEach((im) => { im.style.opacity = 0; }); });
-        if (!list) return;
-        const sec = document.querySelector(`main section[data-chapter="${ch}"]`);
-        if (!sec) return;
-        const r = sec.getBoundingClientRect();
-        const p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - innerHeight)));
-        const n = list.length, seg = p * n, i = Math.min(n - 1, Math.floor(seg)), t = seg - i;
-        els[ch].forEach((im, k) => {
-          const f = list[k];
-          im.style.transformOrigin = `${f.fx * 100}% ${f.fy * 100}%`;
-          let op = 0, sc = 1;
-          if (k === i) { sc = 1 + (k < n - 1 ? 1.6 * ease(t) : 0.08 * (1 - t)); op = k < n - 1 ? 1 - Math.max(0, (t - .72) / .28) : 1; }
-          else if (k === i + 1) { op = Math.max(0, (t - .72) / .28); sc = 1.12 - .12 * op; }
-          im.style.opacity = op; im.style.transform = `scale(${sc})`;
-        });
-      };
-      const req = () => { if (!raf) raf = requestAnimationFrame(paint); };
-      addEventListener('scroll', req, { passive: true });
-      addEventListener('resize', req);
-      new MutationObserver(req).observe(document.body, { attributes: true, attributeFilter: ['data-chapter'] });
-      paint();
-    })();
-  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
