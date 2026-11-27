@@ -32,9 +32,10 @@ const SHOTS = {
   arte:          [[90, 45, 130], [0, 10, 0]],
   contacto:      [[-320, 330, 400], [0, 30, 0]],
 };
-// Iglesia vecina: pegada al basamento por el sur (+z), con el frente sobre la misma
-// línea de edificación de la calle (este, +x). Huella en coordenadas del mundo.
-const CHURCH = { x0: -6, x1: 31.5, z0: 33, z1: 56 };
+// Iglesia vecina: pegada al basamento por el sur (+z local), con el frente sobre la
+// misma línea de fachada del edificio (x = 22.6, mirando a la calle, +x local).
+// Coordenadas locales del sitio: queda alineada (derecha) con el edificio.
+const CHURCH = { x0: -14.5, x1: 22.6, z0: 27.4, z1: 50.4 };
 // Visuales que no deben quedar tapadas por los edificios vecinos (ver clearSight)
 const SIGHT = ['hero', 'edificio', 'fachada-este', 'fachada-sur', 'fachada-oeste', 'fachada-norte', 'documentacion', 'arte', 'residencial', 'amenities']
   .map((k) => SHOTS[k]).filter(Boolean);
@@ -480,19 +481,27 @@ export function createScene(canvas, chapterIds, floorList = []) {
     const meshes = [];
     root.traverse((o) => { if (o.isMesh) meshes.push(o); });
     let tris = 0;
+    const cen = new THREE.Vector3();
     for (const o of meshes) {
       let g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
       g.applyMatrix4(o.matrixWorld);
       if (!g.attributes.normal) g.computeVertexNormals();
       const P = g.attributes.position.array, N = g.attributes.normal.array;
       for (let i = 0; i < P.length; i += 9) {
-        const cx = (P[i] + P[i + 3] + P[i + 6]) / 3, cy = (P[i + 1] + P[i + 4] + P[i + 7]) / 3;
+        const cx = (P[i] + P[i + 3] + P[i + 6]) / 3, cy = (P[i + 1] + P[i + 4] + P[i + 7]) / 3, cz = (P[i + 2] + P[i + 5] + P[i + 8]) / 3;
+        cen.set(cx, cy, cz).applyMatrix4(place);
         const part = cx >= minX + 16.5 && cy >= 6 ? 'residencial' : 'amenities';
         const fdef = floorList.find((f) => cy >= f.y0 && cy < f.y1 && (!f.part || f.part === part));
         if (!fdef) continue;
         const targets = /^Planta tipo/.test(fdef.kind) ? floorList.filter((f) => f.kind === fdef.kind) : [fdef];
         for (const t of targets) {
-          const b = bucket(floors.get(t.id), o.material), dy = t.y0 - fdef.y0;
+          const tf = floors.get(t.id);
+          // Los pisos tipo no son todos iguales: lo que cae fuera de la planta de este
+          // piso (p. ej. el ala que solo tienen los primeros) no se copia, para que no
+          // queden muebles flotando fuera del edificio.
+          const bx = tf.box;
+          if (!bx.isEmpty() && (cen.x < bx.min.x - 0.4 || cen.x > bx.max.x + 0.4 || cen.z < bx.min.z - 0.4 || cen.z > bx.max.z + 0.4)) continue;
+          const b = bucket(tf, o.material), dy = t.y0 - fdef.y0;
           for (let k = 0; k < 9; k += 3) {
             b.pos.push(P[i + k], P[i + k + 1] + dy, P[i + k + 2]);
             b.nor.push(N[i + k], N[i + k + 1], N[i + k + 2]);
@@ -599,7 +608,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
     buildCity(data.buildings);
 
     // Arboleda: plátanos y moreras de las veredas, copas frondosas
-    buildTrees(data.trees.filter(([x, z]) => !(x > CHURCH.x0 && x < CHURCH.x1 && z > CHURCH.z0 && z < CHURCH.z1)));
+    buildTrees(data.trees.filter(([x, z]) => !inChurch(x, z, 1)));
 
     // La iglesia vecina, al lado del edificio
     buildChurch();
@@ -608,6 +617,12 @@ export function createScene(canvas, chapterIds, floorList = []) {
   // Iglesia de fachada colonial rosada (como en los renders de D5): dos campanarios con
   // linterna, frontis con frontón y portal en arco, nave con techo de tejas a dos aguas
   // y cúpula sobre el crucero. El frente mira a la calle (+x).
+  // ¿El punto (x, z) del mundo cae en el terreno de la iglesia? (huella local del sitio)
+  function inChurch(x, z, pad = 0) {
+    const v = new THREE.Vector3(x, 0, z).applyAxisAngle(new THREE.Vector3(0, 1, 0), -site.rotation.y);
+    return v.x > CHURCH.x0 - pad && v.x < CHURCH.x1 + pad && v.z > CHURCH.z0 - pad && v.z < CHURCH.z1 + pad;
+  }
+
   function buildChurch() {
     const { x0, x1, z0, z1 } = CHURCH;
     const W = z1 - z0, zc = (z0 + z1) / 2;
@@ -702,7 +717,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
     add(B(0.14, 0.14, 1.1), bronze, dx, naveH + 14, zc);
     // Atrio de baldosas frente a la iglesia
     add(B(4, 0.12, W), M('#c9bba6', 0.95), fx + 2, 0.06, zc);
-    scene.add(g);
+    site.add(g); // dentro del sitio: misma orientación que el edificio
   }
 
   // Los edificios vecinos que quedan entre una cámara de capítulo y la torre se
@@ -743,7 +758,7 @@ export function createScene(canvas, chapterIds, floorList = []) {
       const sign = Math.sign(area) || 1;
       cx /= pts.length; cz /= pts.length;
       // el lugar de la iglesia queda libre (la iglesia se modela aparte)
-      if (cx > CHURCH.x0 - 3 && cx < CHURCH.x1 + 3 && cz > CHURCH.z0 - 3 && cz < CHURCH.z1 + 3) continue;
+      if (inChurch(cx, cz, 3)) continue;
       let rad = 0;
       for (const [x, z] of pts) rad = Math.max(rad, Math.hypot(x - cx, z - cz));
       const h = clearSight(cx, cz, rad, b.h);
