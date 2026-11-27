@@ -25,10 +25,10 @@
     <a class="brand" href="#hero">Vestigium</a>
     <nav class="nav" aria-label="Secciones">
       <a href="#edificio">Edificio</a>
+      <a href="#fachadas">Fachadas</a>
+      <a href="#documentacion">Planos</a>
       <a href="#renders">Renders</a>
       <a href="#recorrido">Recorrido</a>
-      <a href="#documentacion">Planos</a>
-      <a href="#quinta">Quinta fachada</a>
       <a href="#arte">Arte</a>
     </nav>
   </header>
@@ -46,7 +46,6 @@
         <img class="hero__img" src="assets/renders/hero-aerea.jpg" alt="Vista aérea de Vestigium Towers en el centro de Mendoza, con la cordillera de fondo" width="1264" height="848" />
         <div class="hero__text">
           <h1 class="cast" aria-label="Vestigium Towers">Vestigium</h1>
-          <p class="hero__sub">Una torre de hormigón visto sobre un estacionamiento del centro de Mendoza.</p>
         </div>
       </div>
       <p class="hero__scroll">Bajá para recorrer el edificio</p>
@@ -71,57 +70,19 @@
       </article>
     </section>
 
-    <section class="ch ch--tall" id="renders" data-chapter="renders" data-label="Renders">
-      <article class="copy copy--wide">
-        <h2>Renders</h2>
-        <p>Interiores y exteriores renderizados en D5. Tocá una imagen para verla grande.</p>
-        <div class="gal" id="gal"></div>
-      </article>
-    </section>
-
-    <section class="ch ch--film" id="recorrido" data-chapter="recorrido" data-label="Recorrido">
-      <div class="film">
-        <video class="film__video" id="filmVideo" muted playsinline preload="auto" src="assets/video/recorrido.mp4"></video>
-        <div class="film__fallback" id="filmFallback"><p>Acá va el video del recorrido: del lobby, por el ascensor, hasta el departamento.</p></div>
-        <ol class="film__steps" id="filmSteps"></ol>
-        <div class="ipad" id="ipad" aria-hidden="true">
-          <div class="ipad__screen">
-            <p class="ipad__top">Palier · Planta baja</p>
-            <p class="ipad__floor"><span id="ipadFloor">PB</span></p>
-            <span class="ipad__call">Llamar ascensor</span>
-            <p class="ipad__status" id="ipadStatus">Tocá para llamar</p>
-          </div>
-        </div>
-        <div class="film__bar"><i id="filmFill"></i></div>
-      </div>
-    </section>
-
-    <section class="ch ch--tall" id="documentacion" data-chapter="documentacion" data-label="Planos">
-      <article class="copy copy--wide">
-        <h2>Documentación técnica</h2>
-        <p>Plantas, cortes, vistas e implantación. Usá la rueda o los botones para acercarte y arrastrá para moverte por la lámina.</p>
-        <div class="tabs" role="tablist" id="docTabs"></div>
-        <div class="viewer" id="viewer" tabindex="0" aria-label="Visor de planos: rueda para hacer zoom, arrastrar para mover">
-          <div class="viewer__stage" id="viewerStage"></div>
-          <div class="viewer__meta" id="viewerMeta"></div>
-          <div class="viewer__tools">
-            <button data-zoom="in" aria-label="Acercar">+</button>
-            <button data-zoom="out" aria-label="Alejar">−</button>
-            <button data-zoom="reset" aria-label="Ver lámina completa">1:1</button>
-          </div>
-        </div>
-        <div class="sheets" id="docSheets"></div>
-        <label class="cut">
-          <span>Cortar la maqueta</span>
-          <input type="range" id="cutRange" min="0" max="1" step="0.001" value="0.5" />
-        </label>
-      </article>
-    </section>
+    <!-- Fachadas: la maqueta gira hacia cada fachada; al final mira hacia arriba al voladizo -->
+    <div id="fachadas" class="facades"></div>
 
     <section class="ch ch--tall" id="quinta" data-chapter="quinta" data-label="Quinta fachada">
       <article class="copy copy--wide qf">
+        <p class="fa__n">Fachadas · 5 de 5</p>
         <h2>Quinta fachada</h2>
-        <p class="qf__lead">La quinta fachada es la cara del edificio que se mira desde abajo: el intradós del voladizo del piso 11, sobre la terraza común del piso 10. Ahí aparece la idea de <em>Vestigium</em> en su forma más literal: una pintura que asoma entre las grietas de un revoque gastado, como un fresco que el tiempo tapó y que vuelve a verse a pedazos.</p>
+        <p class="qf__lead">La quinta fachada es la cara del edificio que se mira desde abajo: el intradós del enorme voladizo del piso 11, sobre la terraza común del piso 10. Ahí aparece la idea de <em>Vestigium</em> en su forma más literal: una pintura que asoma entre las grietas de un revoque gastado, como un fresco que el tiempo tapó y que vuelve a verse a pedazos.</p>
+
+        <figure class="qf__render" data-full="assets/renders/escena-11.jpg">
+          <img src="assets/renders/escena-11.jpg" alt="El intradós del voladizo visto desde la terraza del piso 10, con la pintura entre las vigas" loading="lazy" width="1600" height="1127">
+          <figcaption>El voladizo visto desde la terraza del piso 10: la pintura aparece entre las vigas.</figcaption>
+        </figure>
 
         <div class="qf__pair">
           <figure>
@@ -148,6 +109,54 @@
           <figcaption>Lámina de la quinta fachada (VS-05). Tocala para verla completa.</figcaption>
         </figure>
       </article>
+    </section>
+
+    <section class="ch ch--tall" id="documentacion" data-chapter="documentacion" data-label="Planos">
+      <article class="copy copy--wide">
+        <h2>Documentación técnica</h2>
+        <p>Plantas, cortes, vistas e implantación. Usá la rueda o los botones para acercarte y arrastrá para moverte por la lámina.</p>
+        <div class="tabs" role="tablist" id="docTabs"></div>
+        <div class="viewer" id="viewer" tabindex="0" aria-label="Visor de planos: rueda para hacer zoom, arrastrar para mover">
+          <div class="viewer__stage" id="viewerStage"></div>
+          <div class="viewer__meta" id="viewerMeta"></div>
+          <div class="viewer__tools">
+            <button data-zoom="in" aria-label="Acercar">+</button>
+            <button data-zoom="out" aria-label="Alejar">−</button>
+            <button data-zoom="reset" aria-label="Ver lámina completa">1:1</button>
+          </div>
+        </div>
+        <div class="sheets" id="docSheets"></div>
+        <label class="cut">
+          <span>Cortar la maqueta</span>
+          <input type="range" id="cutRange" min="0" max="1" step="0.001" value="0.5" />
+        </label>
+      </article>
+    </section>
+
+    <section class="ch ch--tall" id="renders" data-chapter="renders" data-label="Renders">
+      <article class="copy copy--wide">
+        <h2>Renders</h2>
+        <p>Renderizados en D5, ordenados por piso, de abajo hacia arriba. Tocá una imagen para verla grande.</p>
+        <nav class="gal__nav" id="galNav" aria-label="Pisos"></nav>
+        <div id="gal"></div>
+      </article>
+    </section>
+
+    <section class="ch ch--film" id="recorrido" data-chapter="recorrido" data-label="Recorrido">
+      <div class="film">
+        <video class="film__video" id="filmVideo" muted playsinline preload="auto" src="assets/video/recorrido.mp4"></video>
+        <div class="film__fallback" id="filmFallback"><p>Acá va el video del recorrido: del lobby, por el ascensor, hasta el departamento.</p></div>
+        <ol class="film__steps" id="filmSteps"></ol>
+        <div class="ipad" id="ipad" aria-hidden="true">
+          <div class="ipad__screen">
+            <p class="ipad__top">Palier · Planta baja</p>
+            <p class="ipad__floor"><span id="ipadFloor">PB</span></p>
+            <span class="ipad__call">Llamar ascensor</span>
+            <p class="ipad__status" id="ipadStatus">Tocá para llamar</p>
+          </div>
+        </div>
+        <div class="film__bar"><i id="filmFill"></i></div>
+      </div>
     </section>
 
     <section class="ch ch--tall" id="arte" data-chapter="arte" data-label="Arte">
