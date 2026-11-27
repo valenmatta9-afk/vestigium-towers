@@ -175,7 +175,7 @@ export const RENDERS = [
   ].map(([n, title, f, group]) => ({ src: D5(n), title, floors: [].concat(f), group })),
 ];
 
-// Recorrido: cada paso ocupa una porción del video "assets/video/recorrido.mp4".
+// Recorrido: cada paso ocupa una porción del video "assets/renders/recorrido.mp4".
 export const RECORRIDO = [
   { n: '01', title: 'Acceso principal', text: 'Llegada bajo el gran voladizo de hormigón.' },
   { n: '02', title: 'Lobby', text: 'Doble altura, luz rasante y obra escultórica de autor.' },

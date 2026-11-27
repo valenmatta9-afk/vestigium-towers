@@ -217,18 +217,21 @@ const video = $('#filmVideo');
 const steps = $$('.step');
 const ipad = $('#ipad');
 let hasVideo = false;
-video.addEventListener('loadedmetadata', () => { hasVideo = true; film.querySelector('.film').classList.remove('no-video'); });
-video.addEventListener('error', () => film.querySelector('.film').classList.add('no-video'));
-if (video.readyState === 0) setTimeout(() => { if (!hasVideo) film.querySelector('.film').classList.add('no-video'); }, 2500);
-
-let seekTarget = 0, seeking = false;
+let seekTarget = 0;
 function seek() {
-  if (!hasVideo || seeking) return;
+  // se usa el estado del propio video (no una bandera aparte que pueda quedar trabada)
+  if (!hasVideo || video.seeking) return;
   if (Math.abs(video.currentTime - seekTarget) < 0.03) return;
-  seeking = true;
   video.currentTime = seekTarget;
 }
-video.addEventListener('seeked', () => { seeking = false; seek(); });
+video.addEventListener('seeked', seek);
+
+const onVideo = () => { hasVideo = true; film.querySelector('.film').classList.remove('no-video'); updateFilm(); };
+video.addEventListener('loadedmetadata', onVideo);
+video.addEventListener('error', () => film.querySelector('.film').classList.add('no-video'));
+// si el video ya cargó antes que este script (caché), 'loadedmetadata' no vuelve a dispararse
+if (video.readyState >= 1) onVideo();
+else setTimeout(() => { if (!hasVideo) film.querySelector('.film').classList.add('no-video'); }, 2500);
 
 function updateFilm() {
   const r = film.getBoundingClientRect();
